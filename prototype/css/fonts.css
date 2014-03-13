@@ -1,0 +1,11 @@
+@font-face {
+	font-family: exo;
+	src: url(../fonts/Exo-Light.otf);
+	font-weight:200;
+}
+
+@font-face {
+	font-family: exo;
+	src: url(../fonts/Exo-Bold.otf);
+	font-weight:700;
+}
