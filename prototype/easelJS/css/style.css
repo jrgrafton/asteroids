@@ -1,4 +1,7 @@
 @import url("fonts.css");
+html, body {
+	margin: 0px;
+}
 
 canvas {
 	background: black;
