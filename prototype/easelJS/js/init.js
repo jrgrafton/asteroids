@@ -133,7 +133,7 @@ var Spaceship = (function() {
 			}
 		}
 	}
-//Math.atan2(vy, vx);
+
 	return Spaceship;
 })();
 
@@ -185,7 +185,7 @@ var SpaceRocks = (function() {
 			_this.stage.enableMouseOver(10);
 
 			// Setup initial entities
-			//_this.setupEntities();
+			_this.setupEntities();
 
 			// Start ticking
 			createjs.Ticker.setFPS(TARGET_FPS);
@@ -193,10 +193,10 @@ var SpaceRocks = (function() {
 		},
 		setupEntities : function() {
 			// Create background
-			_this.background = new createjs.Shape();
+			/* _this.background = new createjs.Shape();
 			_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
 			_this.background.cache(-_this.width, -_this.height, _this.width * 2, _this.height * 2);
-			_this.stage.addChild(_this.background);
+			_this.stage.addChild(_this.background); */
 
 			// Create navigation
 			_this.navigationContainer = new createjs.Container();
@@ -253,13 +253,13 @@ var SpaceRocks = (function() {
 			_this.meter.begin();
 			
 			// Update and render ship
-			//_this.ship.update();
-			//_this.ship.render();
+			_this.ship.update();
+			_this.ship.render();
 
 			// Draw navigation helper if visible
-			//if(_this.navigationContainer.visible) {
-			//	_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
-			//}
+			if(_this.navigationContainer.visible) {
+				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
+			}
 
 			//_this.stage.update();
 
