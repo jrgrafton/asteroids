@@ -28,7 +28,7 @@ var Spaceship = (function() {
 	// Dimensions
 	var WIDTH = 20;
 	var HEIGHT = 30;
-alert("test");
+
 	// Speed
 	var ACCELERATION = 0.0000045 * window.devicePixelRatio; // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = 0.15 * window.devicePixelRatio; // Pixels per ms
