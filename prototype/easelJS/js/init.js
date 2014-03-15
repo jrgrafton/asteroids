@@ -78,7 +78,7 @@ var Missile = (function() {
 	var TURN_SPEED = 0.0009; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
-	var SIZE = 3;
+	var SIZE = 30;
 
 	function Missile() {
 		_this = this;
@@ -107,7 +107,7 @@ var Missile = (function() {
 			_this.shape.regY = SIZE / 2;
 			_this.shape.scaleX = window.devicePixelRatio;
 			_this.shape.scaleY = window.devicePixelRatio;
-			_this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2);
+			//_this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2);
 			_this.shape.snapToPixel = true;
 
 			_this.shape.x = Math.random() * 300;
