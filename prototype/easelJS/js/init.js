@@ -78,7 +78,7 @@ var Missile = (function() {
 	var TURN_SPEED = 0.0009; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
-	var SIZE = 30;
+	var SIZE = 3;
 
 	function Missile() {
 		_this = this;
