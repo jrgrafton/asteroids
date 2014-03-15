@@ -224,18 +224,17 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			_this.background.on("pressmove", function(e) { 
-				_this.navigationContainer.visible = true;
+			 _this.stage.addEventListener("pressmove", function(e) {
+			 	_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
 				_this.ship.setHeading(e.stageX, e.stageY);
-			});
+			 });
 
-			_this.background.on("pressup", function(e) {
-				console.log("press up")
+			 _this.stage.addEventListener("pressup", function() {
 				_this.ship.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
-			});
+			 });
 		},
 		/**********************************/
 		/** ------ Draw functions ------ **/
