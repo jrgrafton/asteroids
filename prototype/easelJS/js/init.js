@@ -161,6 +161,7 @@ var SpaceRocks = (function() {
 		/** ------ Setup functions ------ **/
 		/***********************************/
 		init : function() {
+			alert("loaded");
 			// FPS tracker
 			_this.meter = new Stats();
 			_this.meter.setMode(0);
@@ -225,6 +226,7 @@ var SpaceRocks = (function() {
 		},
 		attachObservers : function() {
 			_this.background.on("pressmove", function(e) { 
+				alert("pressmove");
 				_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
@@ -252,7 +254,7 @@ var SpaceRocks = (function() {
 
 		tick : function() {
 			_this.meter.begin();
-			
+			alert("tick");
 			// Update and render ship
 			_this.ship.update();
 			_this.ship.render();
