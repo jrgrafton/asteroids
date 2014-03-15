@@ -51,7 +51,7 @@ var Spaceship = (function() {
 			_this.height = HEIGHT;
 
 			// Rotation
-			_this.angle = 0.0;
+			_this.rotation = 0.0;
 
 			// Velocity in pixels per ms
 			_this.vx = 0;
@@ -84,6 +84,7 @@ var Spaceship = (function() {
 		render : function() {
 			_this.shape.x = _this.x;
 			_this.shape.y = _this.y;
+			_this.shape.rotation = _this.rotation;
 			_this.shape.graphics.clear().beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 		},
 		update : function() {
@@ -114,18 +115,23 @@ var Spaceship = (function() {
 				_this.speed = (_this.speed > MAX_SPEED)? 0 + MAX_SPEED : _this.speed;
 			}
 
+			// Update location
 			_this.x += (timeSinceUpdate * _this.speed) * _this.vx;
 			_this.y += (timeSinceUpdate * _this.speed) * _this.vy;
 
-			if(_this.x > _this.maxX) {
-				_this.x = 0;
-			}
-			if(_this.y > _this.maxY) {
-				_this.y = 0;
+			// Clamp location (origin is in center of shape)
+			_this.x = ((_this.x - _this.width / 2) > _this.maxX)? (0 - _this.width / 2) : _this.x;
+			_this.x = ((_this.x + _this.width / 2) < 0)? (_this.maxX + _this.width / 2) : _this.x;
+			_this.y = ((_this.y - _this.height / 2) > _this.maxY)? (0 - _this.height / 2) : _this.y;
+			_this.y = ((_this.y + _this.height / 2) < 0)? (_this.maxY + _this.height / 2) : _this.y;
+
+			// Turn to face current heading
+			if(_this.vy !== 0 && _this.vx !== 0) {
+				_this.rotation = Math.atan2(_this.vy, _this.vx) * (180 / Math.PI) + 90;
 			}
 		}
 	}
-
+//Math.atan2(vy, vx);
 	return Spaceship;
 })();
 
