@@ -182,6 +182,7 @@ var SpaceRocks = (function() {
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
 			createjs.Touch.enable(_this.stage);
+			_this.stage.enableMouseOver(10);
 
 			// Setup initial entities
 			_this.setupEntities();
@@ -224,7 +225,6 @@ var SpaceRocks = (function() {
 		},
 		attachObservers : function() {
 			_this.background.on("pressmove", function(e) { 
-				_this.redrawNavigationHelper(e);
 				_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
