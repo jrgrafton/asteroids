@@ -224,11 +224,15 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			alert("attached 3");
-			 _this.background.on("click", function() {
-
+			alert("attached 4");
+			 _this.ship.shape.on("click", function() {
 			 	alert("click");
-			 })
+			 });
+
+			 _this.ship.shape.on("pressmove", function() {
+			 	alert("touch");
+			 });
+
 			 _this.background.on("pressmove", function(e) {
 			 	//alert("touch");
 			 	_this.navigationContainer.visible = true;
