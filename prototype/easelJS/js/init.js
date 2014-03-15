@@ -30,8 +30,8 @@ var Spaceship = (function() {
 	var HEIGHT = 30;
 
 	// Speed
-	var ACCELERATION = 0.0000045; // Pixels per ms to add for each pixel distance from heading
-	var MAX_SPEED = 0.15; // Pixels per ms
+	var ACCELERATION = 0.0000045 * window.devicePixelRatio; // Pixels per ms to add for each pixel distance from heading
+	var MAX_SPEED = 0.15 * window.devicePixelRatio; // Pixels per ms
 	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
 	function Spaceship() {
