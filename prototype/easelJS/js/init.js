@@ -224,14 +224,14 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			 _this.stage.addEventListener("pressmove", function(e) {
+			 _this.background.addEventListener("pressmove", function(e) {
 			 	_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
 				_this.ship.setHeading(e.stageX, e.stageY);
 			 });
 
-			 _this.stage.addEventListener("pressup", function() {
+			 _this.background.addEventListener("pressup", function() {
 				_this.ship.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			 });
