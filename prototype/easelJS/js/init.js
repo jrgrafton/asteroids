@@ -82,8 +82,10 @@ var Spaceship = (function() {
 		setMaxExtents : function(maxX, maxY) {
 			_this.maxY = maxX;
 			_this.maxY = maxY;
-			ACCELERATION *= maxX / 640;
-			MAX_SPEED *= maxY / 640;
+
+			// Increase speed for displays over 640 wide
+			ACCELERATION *= maxX / (320 * window.devicePixelRatio);
+			MAX_SPEED *= maxY / (320 * window.devicePixelRatio);
 		},
 		setHeading : function(x, y) {
 			_this.xHeading = x;
