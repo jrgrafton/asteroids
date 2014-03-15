@@ -194,7 +194,7 @@ var SpaceRocks = (function() {
 		setupEntities : function() {
 			// Create background
 			_this.background = new createjs.Shape();
-			_this.background.graphics.beginFill("#00ff00").drawRect(0, 0, _this.width, _this.height);
+			_this.background.graphics.beginFill("#00ff00").drawRect(0, 0, 768, 1024);
 			//_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
 			_this.stage.addChild(_this.background);
 
@@ -224,15 +224,7 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			alert("attached 4");
-			 _this.ship.shape.on("click", function() {
-			 	alert("click");
-			 });
-
-			 _this.ship.shape.on("pressmove", function() {
-			 	alert("touch");
-			 });
-
+			alert("attached 5");
 			 _this.background.on("pressmove", function(e) {
 			 	//alert("touch");
 			 	_this.navigationContainer.visible = true;
@@ -266,13 +258,12 @@ var SpaceRocks = (function() {
 			// Update and render ship
 			_this.ship.update();
 			_this.ship.render();
-
 			// Draw navigation helper if visible
 			if(_this.navigationContainer.visible) {
 				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
 			}
-
 			_this.stage.update();
+
 			_this.meter.end();
 		},
 	}
