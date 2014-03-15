@@ -59,7 +59,7 @@ var HUD = (function() {
 		},
 		update : function() {
 			_this.score.text = "Score: " + _this.game.score;
-			_this.missiles.text = "Missiles: " + _this.player.missiles;
+			_this.missiles.text = "Missiles: " + _this.player.missileCount;
 			//_this.container.cache();
 		}
 	}
@@ -134,7 +134,9 @@ var Player = (function() {
 			/**********************/
 			/* START: data fields */
 			/**********************/
-			_this.missiles = 5;
+			_this.missileCount = 5;
+			_this.lastMissileFired = new Date().getTime();
+			_this.lastMissileRecharged = new Date().getTime();
 
 			/********************/
 			/* END: data fields */
@@ -162,6 +164,12 @@ var Player = (function() {
 		setHeading : function(x, y) {
 			_this.xHeading = x;
 			_this.yHeading = y;
+		},
+		fireMissile : function(x, y) {
+			if(_this.missileCount > 0) {
+				--_this.missileCount;
+				_this.lastMissileFired = new Date().getTime();
+			}
 		},
 		render : function() {
 			_this.shape.x = _this.x;
@@ -210,6 +218,14 @@ var Player = (function() {
 			// Turn to face current heading
 			if(_this.vy !== 0 && _this.vx !== 0) {
 				_this.rotation = Math.atan2(_this.vy, _this.vx) * (180 / Math.PI) + 90;
+			}
+
+			// Recharge missiles
+			if(new Date().getTime() - _this.lastMissileFired > MISSILE_RECHARGE_TIME 
+				&& new Date().getTime() - _this.lastMissileRecharged > MISSILE_RECHARGE_TIME 
+				&& _this.missileCount < MAX_MISSILES) {
+				_this.lastMissileRecharged = new Date().getTime();
+				++_this.missileCount;
 			}
 		}
 	}
@@ -318,7 +334,10 @@ var SpaceRocks = (function() {
 				_this.player.setHeading(e.stageX, e.stageY);
 			 });
 
-			 _this.background.on("pressup", function() {
+			 _this.background.on("pressup", function(e) {
+			 	if(!_this.navigationContainer.visible) {
+			 		_this.player.fireMissile(e.stageX, e.stageY);
+			 	}
 				_this.player.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			 });
