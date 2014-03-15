@@ -195,7 +195,7 @@ var SpaceRocks = (function() {
 			// Create background
 			_this.background = new createjs.Shape();
 			alert(_this.width + " " + _this.height);
-			_this.background.graphics.beginFill("#00ff00").drawRect(0, 0, 1536, 2048);
+			_this.background.graphics.beginFill("#00ff00").drawRect(0, 0, 1536, 1856);
 			//_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
 			_this.stage.addChild(_this.background);
 
