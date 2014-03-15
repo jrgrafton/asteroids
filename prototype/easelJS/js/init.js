@@ -196,7 +196,7 @@ var SpaceRocks = (function() {
 			_this.background = new createjs.Shape();
 			_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
 			_this.stage.addChild(_this.background);
-			/_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
+			//_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
 
 			// Create navigation
 			_this.navigationContainer = new createjs.Container();
