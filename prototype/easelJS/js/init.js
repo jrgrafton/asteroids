@@ -152,7 +152,7 @@ var SpaceRocks = (function() {
 	function SpaceRocks() {
 		_this = this;
 		_this.init();
-		//_this.attachObservers();
+		_this.attachObservers();
 	}
 
 	SpaceRocks.prototype = {
@@ -224,14 +224,15 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			_this.background.on("pressmove", function(e) { 
+			_this.stage.on("stagemousemove", function(e) { 
 				_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
 				_this.ship.setHeading(e.stageX, e.stageY);
 			});
 
-			_this.background.on("pressup", function(e) {
+			_this.stage.on("pressup", function(e) {
+				console.log("press up")
 				_this.ship.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			});
