@@ -168,10 +168,10 @@ var SpaceRocks = (function() {
 			document.body.appendChild( _this.meter.domElement );
 
 			// Set dimensions
-			alert(window.innerWidth);
+			alert("Test scaling");
 			var canvas = document.getElementById("spaceRocks");
-			_this.width = (window.innerWidth < MAX_WIDTH)? window.innerWidth : MAX_WIDTH;
-			_this.height = (window.innerHeight < MAX_HEIGHT)? window.innerHeight : MAX_HEIGHT;
+			_this.width = (window.innerWidth < MAX_WIDTH)? window.innerWidth * (1 / window.devicePixelRatio) : MAX_WIDTH;
+			_this.height = (window.innerHeight < MAX_HEIGHT)? window.innerHeight * (1 / window.devicePixelRatio) : MAX_HEIGHT;
 			canvas.setAttribute("width", _this.width);
 			canvas.setAttribute("height", _this.height);
 			
