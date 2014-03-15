@@ -224,9 +224,13 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			alert("attached 2");
+			alert("attached 3");
+			 _this.background.on("click", function() {
+
+			 	alert("click");
+			 })
 			 _this.background.on("pressmove", function(e) {
-			 	alert("touch");
+			 	//alert("touch");
 			 	_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
@@ -234,7 +238,7 @@ var SpaceRocks = (function() {
 			 });
 
 			 _this.background.on("pressup", function() {
-			 	alert("pressup")
+			 	//alert("pressup")
 				_this.ship.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			 });
