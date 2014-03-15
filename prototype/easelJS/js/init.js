@@ -161,7 +161,6 @@ var SpaceRocks = (function() {
 		/** ------ Setup functions ------ **/
 		/***********************************/
 		init : function() {
-			alert("loaded");
 			// FPS tracker
 			_this.meter = new Stats();
 			_this.meter.setMode(0);
@@ -196,7 +195,7 @@ var SpaceRocks = (function() {
 			// Create background
 			_this.background = new createjs.Shape();
 			_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
-			_this.background.cache(-(_this.width * window.devicePixelRatio), -(_this.height * window.devicePixelRatio), (_this.width * window.devicePixelRatio) * 2, (_this.height * window.devicePixelRatio) * 2);
+			_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
 			_this.stage.addChild(_this.background);
 
 			// Create navigation
@@ -225,9 +224,7 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
-			alert("attachObservers");
 			_this.background.on("pressmove", function(e) { 
-				alert("pressmove");
 				_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
