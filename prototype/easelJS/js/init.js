@@ -169,8 +169,8 @@ var SpaceRocks = (function() {
 
 			// Set dimensions
 			var canvas = document.getElementById("spaceRocks");
-			_this.width = (window.innerWidth < MAX_WIDTH)? window.innerWidth * (1 / window.devicePixelRatio) : MAX_WIDTH;
-			_this.height = (window.innerHeight < MAX_HEIGHT)? window.innerHeight * (1 / window.devicePixelRatio) : MAX_HEIGHT;
+			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * (1 / window.devicePixelRatio) : MAX_WIDTH;
+			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * (1 / window.devicePixelRatio) : MAX_HEIGHT;
 			
 			canvas.width = _this.width;
 			canvas.height = _this.height;
