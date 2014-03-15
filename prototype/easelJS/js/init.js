@@ -38,18 +38,19 @@ var HUD = (function() {
 			_this.container.width = _this.game.width;
 			_this.container.height = _this.game.height / 10;
 
-			_this.score = new createjs.Text("Score: 0", "60px Arial", "#ffffff");
+			_this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
 			_this.score.x = 0;
 			_this.score.y = _this.game.height - _this.score.getBounds().height;
+			_this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
 			_this.score.textAlign = "left";
 			
 
-			_this.missiles = new createjs.Text("Missiles: 0", "60px Arial", "#ffffff");
+			_this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
 			_this.missiles.y = _this.game.height - _this.score.getBounds().height;
 			_this.missiles.x = _this.game.width - _this.missiles.getBounds().width;
+			_this.missiles.scaleX = _this.missiles.scaleY = window.devicePixelRatio;
 			_this.missiles.textAlign = "left";
 			
-
 			// Add text to stage
 			_this.container.addChild(_this.score);
 			_this.container.addChild(_this.missiles);
@@ -71,28 +72,31 @@ var HUD = (function() {
 /** ------ Player ------ **/
 /**************************/
 var Missile = (function() {
-	var _this;
+	//var _this;
 
-	var ACCELERATION = (0.0000090 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
+	var ACCELERATION = (0.00002 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = (0.45 * window.devicePixelRatio); // Pixels per ms
-	var TURN_SPEED = 0.0009; // Speed of turn in MS. 1 = turn to face in 1ms 
+	var TURN_SPEED = 0.0006; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
 	var SIZE = 3;
 
 	function Missile() {
-		_this = this;
+		//_this = this;
 
 		// Velocity components (between 0 and -1)
-		_this.vx = 0;
-		_this.vy = 0;
+		this.vx = 0;
+		this.vy = 0;
 
 		// Location that missile is heading toward
-		_this.xHeading = null;
-		_this.yHeading = null;
+		this.xHeading = null;
+		this.yHeading = null;
 
 		// Speed
-		_this.speed = 0;
+		this.speed = 0.5;
+
+		// FPS independent movement
+		this.lastUpdate = new Date().getTime();
 	}
 
 	Missile.prototype = {
@@ -102,19 +106,54 @@ var Missile = (function() {
 		},
 		setShape : function(shape) {
 			this.shape = shape;
-			_this.shape.graphics.beginFill("#00ff00").drawCircle(0, 0, SIZE, SIZE);
-			_this.shape.regX = SIZE / 2;
-			_this.shape.regY = SIZE / 2;
-			_this.shape.scaleX = window.devicePixelRatio;
-			_this.shape.scaleY = window.devicePixelRatio;
-			_this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
-			_this.shape.snapToPixel = true;
-
-			_this.shape.x = Math.random() * 300;
-			_this.shape.y = Math.random() * 300;
+			this.shape.graphics.beginFill("#00ff00").drawCircle(0, 0, SIZE, SIZE);
+			this.shape.regX = SIZE / 2;
+			this.shape.regY = SIZE / 2;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
+			this.shape.snapToPixel = true;
+		},
+		setHeading : function(xHeading, yHeading) {
+			this.xHeading = xHeading;
+			this.yHeading = yHeading;
+		},
+		render : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
 		},
 		update : function() {
+			if(this.exploded) return;
 
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
+
+			// Get vector which connects current location to target
+			var xDiff = this.xHeading - this.x;
+			var yDiff = this.yHeading - this.y;
+			var hvx = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  xDiff;
+			var hvy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
+
+			// Move heading towards target
+			if(this.vx !== hvx) {
+				var direction = (this.vx > hvx)? -1 : 1;
+				this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
+			}
+			if(this.vy !== hvy) {
+				var direction = (this.vy > hvy)? -1 : 1;
+				this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
+			}
+
+			// Update speed
+			this.speed += ACCELERATION * timeSinceUpdate;
+
+			// Update location
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			if(Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10) {
+				this.exploded = true;
+			}
 		}
 	}
 
@@ -130,7 +169,7 @@ var Player = (function() {
 	var HEIGHT = 30;
 
 	// Speed fields
-	var ACCELERATION = (0.0000045 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
+	var ACCELERATION = (0.00000150 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = (0.15 * window.devicePixelRatio); // Pixels per ms
 	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
@@ -185,6 +224,7 @@ var Player = (function() {
 			/**********************/
 			/* START: data fields */
 			/**********************/
+			_this.missileFired = null; // So that missiles can be fired in update loop
 			_this.activeMissiles = new Array();
 			_this.missileCount = 5;
 			_this.lastMissileFired = new Date().getTime();
@@ -218,24 +258,12 @@ var Player = (function() {
 			_this.yHeading = y;
 		},
 		fireMissile : function(x, y) {
-			if(_this.missileCount > 0) {
-				// Adjust missile count for player
-				--_this.missileCount;
-				_this.lastMissileFired = new Date().getTime();
-
-				// Setup shape and missle
-				var shape = new createjs.Shape();
-				var missile = new Missile();
-				missile.setShape(shape);
-				_this.activeMissiles.push(missile);
-				_this.game.stage.addChild(shape);
-			}
+			_this.missileFired = new createjs.Point(x, y); // Will actually be fired in next update loop
 		},
 		render : function() {
 			_this.shape.x = _this.x;
 			_this.shape.y = _this.y;
 			_this.shape.rotation = _this.rotation;
-			_this.shape.graphics.clear().beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - _this.lastUpdate;
@@ -286,6 +314,37 @@ var Player = (function() {
 				&& _this.missileCount < MAX_MISSILES) {
 				_this.lastMissileRecharged = new Date().getTime();
 				++_this.missileCount;
+			}
+
+			// Update all missiles
+			if(_this.missileCount > 0 && _this.missileFired) {
+				// Adjust missile count for player
+				--_this.missileCount;
+				_this.lastMissileFired = new Date().getTime();
+
+				// Setup shape and missle
+				var shape = new createjs.Shape();
+				var missile = new Missile();
+				missile.setShape(shape);
+				missile.setHeading(_this.missileFired.x, _this.missileFired.y);
+				missile.vx = _this.vx;
+				missile.vy = _this.vy;
+				missile.x = _this.x + (_this.vx * (_this.width / 2));	// TODO: Poisiton missile at middle top of ship
+				missile.y = _this.y + (_this.vy * (_this.height / 2));	// TODO: Poisiton missile at middle top of ship
+				_this.activeMissiles.push(missile);
+				_this.game.stage.addChild(shape);
+				_this.missileFired = false;
+			}
+
+			for(var i = 0; i < _this.activeMissiles.length; i++) {
+				if(_this.activeMissiles[i] == null) continue;
+				if(_this.activeMissiles[i].exploded) {
+					_this.game.stage.removeChild(_this.activeMissiles[i].shape);
+					delete _this.activeMissiles[i];
+				} else {
+					_this.activeMissiles[i].update();
+					_this.activeMissiles[i].render();
+				}
 			}
 		}
 	}
