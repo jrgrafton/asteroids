@@ -168,6 +168,7 @@ var SpaceRocks = (function() {
 			document.body.appendChild( _this.meter.domElement );
 
 			// Set dimensions
+			alert(window.innerWidth);
 			var canvas = document.getElementById("spaceRocks");
 			_this.width = (window.innerWidth < MAX_WIDTH)? window.innerWidth : MAX_WIDTH;
 			_this.height = (window.innerHeight < MAX_HEIGHT)? window.innerHeight : MAX_HEIGHT;
