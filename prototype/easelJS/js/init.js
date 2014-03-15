@@ -144,8 +144,8 @@ var SpaceRocks = (function() {
 	var _this;
 
 	// Global static vars
-	var MAX_WIDTH = 320;
-	var MAX_HEIGHT = 568;
+	var MAX_WIDTH = 768;
+	var MAX_HEIGHT = 1024;
 	var TARGET_FPS = 60;
 	
 	// Constructor
