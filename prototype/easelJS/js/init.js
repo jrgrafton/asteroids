@@ -203,11 +203,11 @@ var SpaceRocks = (function() {
 
 			var navigationCircle = new createjs.Shape();
 			navigationCircle.name = "navigationCircle";
+			navigationCircle.graphics.setStrokeStyle(2).beginStroke("#0000ff").drawCircle(0, 0, 35, 35);
 			navigationCircle.scaleX = window.devicePixelRatio;
 			navigationCircle.scaleY = window.devicePixelRatio;
-			navigationCircle.graphics.setStrokeStyle(2).beginStroke("#0000ff").drawCircle(0, 0, 35, 35);
 			navigationCircle.cache(-39, -39, 78, 78);
-			
+
 			var navigationLine = new createjs.Shape();
 			navigationLine.name = "navigationLine";
 			_this.navigationContainer.addChild(navigationCircle, navigationLine);
@@ -249,6 +249,8 @@ var SpaceRocks = (function() {
 			navigationCircle.y = y;
 
 			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.ship.x, _this.ship.y, x, y, 4);
+			navigationLine.scaleX = window.devicePixelRatio;
+			navigationLine.scaleY = window.devicePixelRatio;
 		},
 
 		tick : function() {
