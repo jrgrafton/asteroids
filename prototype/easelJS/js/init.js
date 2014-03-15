@@ -185,7 +185,7 @@ var SpaceRocks = (function() {
 			_this.stage.enableMouseOver(10);
 
 			// Setup initial entities
-			_this.setupEntities();
+			//_this.setupEntities();
 
 			// Start ticking
 			createjs.Ticker.setFPS(TARGET_FPS);
@@ -253,15 +253,15 @@ var SpaceRocks = (function() {
 			_this.meter.begin();
 			
 			// Update and render ship
-			_this.ship.update();
-			_this.ship.render();
+			//_this.ship.update();
+			//_this.ship.render();
 
 			// Draw navigation helper if visible
 			if(_this.navigationContainer.visible) {
-				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
+			//	_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
 			}
 
-			_this.stage.update();
+			//_this.stage.update();
 
 			_this.meter.end();
 		},
