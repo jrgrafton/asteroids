@@ -142,8 +142,8 @@ var SpaceRocks = (function() {
 	var _this;
 
 	// Global static vars
-	var MAX_WIDTH = 320 * window.devicePixelRatio;
-	var MAX_HEIGHT = 568 * window.devicePixelRatio;
+	var MAX_WIDTH = 320;
+	var MAX_HEIGHT = 568;
 	var TARGET_FPS = 60;
 	
 	// Constructor
@@ -169,12 +169,14 @@ var SpaceRocks = (function() {
 
 			// Set dimensions
 			var canvas = document.getElementById("spaceRocks");
-			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio : MAX_WIDTH;
-			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio : MAX_HEIGHT;
+			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth  : MAX_WIDTH;
+			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight  : MAX_HEIGHT;
 			
-			canvas.width = _this.width;
-			canvas.height = _this.height;
-			alert(canvas.width + " " + canvas.height);
+			canvas.width = _this.width * window.devicePixelRatio;
+			canvas.height = _this.height * window.devicePixelRatio;
+			canvas.style.width = _this.width + "px";
+			canvas.style.height = _this.height + "px";
+			alert("Updated test");
 			
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
