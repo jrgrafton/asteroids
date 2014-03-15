@@ -224,7 +224,9 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
+			alert("attached");
 			 _this.background.addEventListener("pressmove", function(e) {
+			 	alert("touch");
 			 	_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
