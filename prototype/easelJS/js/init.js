@@ -18,10 +18,59 @@ createjs.Graphics.prototype.dashedLineTo = function(x1, y1, x2, y2, dashLen) {
     }
     this[q % 2 == 0 ? 'moveTo' : 'lineTo'](x2, y2); 
 }
+
+var HUD = (function() {
+	var _this;
+
+	function HUD(game, player) {
+		// Set player and game objects
+		_this = this;
+		_this.game = game;
+		_this.player = player;
+		_this.init();
+	}
+
+	HUD.prototype = {
+		constructor : HUD,
+		init : function() {
+			_this.container = new createjs.Container();
+			_this.container.x = _this.container.y = 0;
+			_this.container.width = _this.game.width;
+			_this.container.height = _this.game.height / 10;
+
+			_this.score = new createjs.Text("Score: 0", "60px Arial", "#ffffff");
+			_this.score.x = 0;
+			_this.score.y = _this.game.height - _this.score.getBounds().height;
+			_this.score.textAlign = "left";
+			
+
+			_this.missiles = new createjs.Text("Missiles: 0", "60px Arial", "#ffffff");
+			_this.missiles.y = _this.game.height - _this.score.getBounds().height;
+			_this.missiles.x = _this.game.width - _this.missiles.getBounds().width;
+			_this.missiles.textAlign = "left";
+			
+
+			// Add text to stage
+			_this.container.addChild(_this.score);
+			_this.container.addChild(_this.missiles);
+			//_this.container.cache(-_this.container.width, -_this.container.height, _this.container.width, _this.container.height);
+
+			_this.game.stage.addChild(_this.container);
+		},
+		update : function() {
+			_this.score.text = "Score: " + _this.game.score;
+			_this.missiles.text = "Missiles: " + _this.player.missiles;
+			//_this.container.cache();
+		}
+	}
+
+	return HUD;
+})();
+
 /*****************************/
-/** ------ Spaceship ------ **/
+/** ------ Player ------ **/
 /*****************************/
-var Spaceship = (function() {
+var Player = (function() {
 	var _this;
 
 	/*  Static vars */
@@ -29,19 +78,27 @@ var Spaceship = (function() {
 	var WIDTH = 20;
 	var HEIGHT = 30;
 
-	// Speed
+	// Speed fields
 	var ACCELERATION = (0.0000045 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = (0.15 * window.devicePixelRatio); // Pixels per ms
 	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
-	function Spaceship() {
+	// Data fields
+	var MAX_MISSILES = 5;
+	var MISSILE_RECHARGE_TIME = 1000; // in ms
+	var MISSILE_ACCELERATION = ACCELERATION * 2; // in pixels per ms  
+
+	function Player() {
 		_this = this;
 		_this.init();
-	}
+	} 
 
-	Spaceship.prototype = {
-		constructor : Spaceship,
+	Player.prototype = {
+		constructor : Player,
 		init : function() {
+			/**************************/
+			/* START: movement fields */
+			/**************************/
 			// Location
 			_this.x = 0;
 			_this.y = 0;
@@ -68,6 +125,20 @@ var Spaceship = (function() {
 			_this.lastUpdate = new Date().getTime();
 
 			// Max locations for ship
+			_this.maxX = -1;
+			_this.maxY = -1;
+			/************************/
+			/* END: movement fields */
+			/************************/
+
+			/**********************/
+			/* START: data fields */
+			/**********************/
+			_this.missiles = 5;
+
+			/********************/
+			/* END: data fields */
+			/********************/
 		},
 		/* Setter function so caching can be setup immediately */
 		setShape : function(shape) {
@@ -78,6 +149,7 @@ var Spaceship = (function() {
 			_this.shape.scaleX = window.devicePixelRatio;
 			_this.shape.scaleY = window.devicePixelRatio;
 			_this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
+			_this.shape.snapToPixel = true;
 		},
 		setMaxExtents : function(maxX, maxY) {
 			_this.maxY = maxX;
@@ -142,7 +214,7 @@ var Spaceship = (function() {
 		}
 	}
 
-	return Spaceship;
+	return Player;
 })();
 
 /*****************************/
@@ -181,7 +253,6 @@ var SpaceRocks = (function() {
 			var canvas = document.getElementById("spaceRocks");
 			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH;
 			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT;
-			
 			canvas.width = _this.width;
 			canvas.height = _this.height;
 			canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
@@ -191,9 +262,13 @@ var SpaceRocks = (function() {
 			_this.stage = new createjs.Stage("spaceRocks");
 			createjs.Touch.enable(_this.stage);
 			_this.stage.enableMouseOver(10);
+			_this.stage.snapToPixelEnabled = true;
 
 			// Setup initial entities
 			_this.setupEntities();
+
+			// Setup score
+			_this.score = Math.floor(Math.random() * 100);
 
 			// Start ticking
 			createjs.Ticker.setFPS(TARGET_FPS);
@@ -220,31 +295,31 @@ var SpaceRocks = (function() {
 			_this.navigationContainer.addChild(navigationCircle, navigationLine);
 			_this.stage.addChild(_this.navigationContainer);
 
-			// Create ship
-			_this.ship = new Spaceship()
-			_this.ship.setShape(new createjs.Shape());
-			_this.ship.x = (_this.width / 2) - (_this.ship.width / 2);
-			_this.ship.y = (_this.height / 2) - (_this.ship.height / 2);
-			_this.ship.setMaxExtents(_this.width, _this.height);
-
-			_this.ship.maxX = _this.width;
-			_this.ship.maxY = _this.height;
-			_this.stage.addChild(_this.ship.shape);
-			_this.ship.render();
+			// Create player
+			_this.player = new Player()
+			_this.player.setShape(new createjs.Shape());
+			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
+			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
+			_this.player.setMaxExtents(_this.width, _this.height);
+			_this.player.maxX = _this.width;
+			_this.player.maxY = _this.height;
+			_this.stage.addChild(_this.player.shape);
+			_this.player.render();
 			_this.stage.update();
+
+			// Create HUD
+			_this.hud = new HUD(_this, _this.player);
 		},
 		attachObservers : function() {
 			 _this.background.on("pressmove", function(e) {
-			 	//alert("touch");
 			 	_this.navigationContainer.visible = true;
 				_this.lastTouchX = e.stageX;
 				_this.lastTouchY = e.stageY;
-				_this.ship.setHeading(e.stageX, e.stageY);
+				_this.player.setHeading(e.stageX, e.stageY);
 			 });
 
 			 _this.background.on("pressup", function() {
-			 	//alert("pressup")
-				_this.ship.setHeading(null, null);
+				_this.player.setHeading(null, null);
 				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			 });
 		},
@@ -258,19 +333,23 @@ var SpaceRocks = (function() {
 			navigationCircle.x = x;
 			navigationCircle.y = y;
 
-			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.ship.x, _this.ship.y, x, y, 4);
+			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.player.x, _this.player.y, x, y, 4);
 		},
 
 		tick : function() {
 			_this.meter.begin();
 
-			// Update and render ship
-			_this.ship.update();
-			_this.ship.render();
+			// Update and render player
+			_this.player.update();
+			_this.player.render();
 			// Draw navigation helper if visible
 			if(_this.navigationContainer.visible) {
 				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
 			}
+			// Update HUD
+			_this.hud.update();
+
+			// Draw everything to stage
 			_this.stage.update();
 
 			_this.meter.end();
