@@ -261,8 +261,7 @@ var SpaceRocks = (function() {
 				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
 			}
 
-			//_this.stage.update();
-
+			_this.stage.update();
 			_this.meter.end();
 		},
 	}
