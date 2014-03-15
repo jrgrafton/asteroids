@@ -107,7 +107,7 @@ var Missile = (function() {
 			_this.shape.regY = SIZE / 2;
 			_this.shape.scaleX = window.devicePixelRatio;
 			_this.shape.scaleY = window.devicePixelRatio;
-			//_this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2);
+			_this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
 			_this.shape.snapToPixel = true;
 
 			_this.shape.x = Math.random() * 300;
