@@ -30,8 +30,8 @@ var Spaceship = (function() {
 	var HEIGHT = 30;
 
 	// Speed
-	var ACCELERATION = 0.0000045 * window.devicePixelRatio; // Pixels per ms to add for each pixel distance from heading
-	var MAX_SPEED = 0.15 * window.devicePixelRatio; // Pixels per ms
+	var ACCELERATION = (0.0000045 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
+	var MAX_SPEED = (0.15 * window.devicePixelRatio); // Pixels per ms
 	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
 	function Spaceship() {
@@ -78,6 +78,12 @@ var Spaceship = (function() {
 			_this.shape.scaleX = window.devicePixelRatio;
 			_this.shape.scaleY = window.devicePixelRatio;
 			_this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
+		},
+		setMaxExtents : function(maxX, maxY) {
+			_this.maxY = maxX;
+			_this.maxY = maxY;
+			ACCELERATION *= maxX / 640;
+			MAX_SPEED *= maxY / 640;
 		},
 		setHeading : function(x, y) {
 			_this.xHeading = x;
@@ -217,6 +223,8 @@ var SpaceRocks = (function() {
 			_this.ship.setShape(new createjs.Shape());
 			_this.ship.x = (_this.width / 2) - (_this.ship.width / 2);
 			_this.ship.y = (_this.height / 2) - (_this.ship.height / 2);
+			_this.ship.setMaxExtents(_this.width, _this.height);
+
 			_this.ship.maxX = _this.width;
 			_this.ship.maxY = _this.height;
 			_this.stage.addChild(_this.ship.shape);
