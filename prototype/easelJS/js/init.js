@@ -75,6 +75,8 @@ var Spaceship = (function() {
 			_this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 			_this.shape.regX = WIDTH / 2;
 			_this.shape.regY = HEIGHT / 2;
+			_this.shape.scaleX = window.devicePixelRatio;
+			_this.shape.scaleY = window.devicePixelRatio;
 			_this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
 		},
 		setHeading : function(x, y) {
@@ -142,8 +144,8 @@ var SpaceRocks = (function() {
 	var _this;
 
 	// Global static vars
-	var MAX_WIDTH = 640;
-	var MAX_HEIGHT = 1036;
+	var MAX_WIDTH = 320;
+	var MAX_HEIGHT = 568;
 	var TARGET_FPS = 60;
 	
 	// Constructor
@@ -176,7 +178,6 @@ var SpaceRocks = (function() {
 			canvas.height = _this.height;
 			canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
 			canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
-			alert("Updated test");
 			
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
