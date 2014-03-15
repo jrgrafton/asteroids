@@ -225,6 +225,7 @@ var SpaceRocks = (function() {
 			_this.stage.update();
 		},
 		attachObservers : function() {
+			alert("attachObservers");
 			_this.background.on("pressmove", function(e) { 
 				alert("pressmove");
 				_this.navigationContainer.visible = true;
@@ -254,7 +255,7 @@ var SpaceRocks = (function() {
 
 		tick : function() {
 			_this.meter.begin();
-			alert("tick");
+
 			// Update and render ship
 			_this.ship.update();
 			_this.ship.render();
