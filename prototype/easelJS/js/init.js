@@ -206,7 +206,7 @@ alert(canvas.width  + " " + canvas.height + " " + canvas.style.width + " " + can
 
 			var navigationCircle = new createjs.Shape();
 			navigationCircle.name = "navigationCircle";
-			navigationCircle.graphics.setStrokeStyle(2).beginStroke("#0000ff").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
+			navigationCircle.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#0000ff").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
 			//navigationCircle.cache(-39, -39, 78, 78);
 
 			var navigationLine = new createjs.Shape();
