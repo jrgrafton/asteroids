@@ -178,9 +178,6 @@ var SpaceRocks = (function() {
 			canvas.height = _this.height;
 			canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
 			canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
-			
-
-alert(canvas.width  + " " + canvas.height + " " + canvas.style.width + " " + canvas.style.height);
 
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
@@ -206,8 +203,8 @@ alert(canvas.width  + " " + canvas.height + " " + canvas.style.width + " " + can
 
 			var navigationCircle = new createjs.Shape();
 			navigationCircle.name = "navigationCircle";
-			navigationCircle.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#0000ff").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
-			//navigationCircle.cache(-39, -39, 78, 78);
+			navigationCircle.graphics.setStrokeStyle(2).beginStroke("#0000ff").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
+			navigationCircle.cache(-39, -39, 78, 78);
 
 			var navigationLine = new createjs.Shape();
 			navigationLine.name = "navigationLine";
