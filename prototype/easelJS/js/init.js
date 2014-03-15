@@ -179,6 +179,9 @@ var SpaceRocks = (function() {
 			canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
 			canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
 			
+
+alert(canvas.width  + " " + canvas.height + " " + canvas.style.width + " " + canvas.style.height);
+
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
 			createjs.Touch.enable(_this.stage);
@@ -206,11 +209,13 @@ var SpaceRocks = (function() {
 			navigationCircle.graphics.setStrokeStyle(2).beginStroke("#0000ff").drawCircle(0, 0, 35, 35);
 			navigationCircle.scaleX = window.devicePixelRatio;
 			navigationCircle.scaleY = window.devicePixelRatio;
-			//navigationCircle.cache(-39, -39, 78, 78);
+			navigationCircle.cache(-39, -39, 78, 78);
 
 			var navigationLine = new createjs.Shape();
 			navigationLine.name = "navigationLine";
 			_this.navigationContainer.addChild(navigationCircle, navigationLine);
+			_this.navigationContainer.scaleX = window.devicePixelRatio;;
+			_this.navigationContainer.scaleY = window.devicePixelRatio;;
 			_this.stage.addChild(_this.navigationContainer);
 
 			// Create ship
