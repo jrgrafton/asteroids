@@ -24,9 +24,15 @@ createjs.Graphics.prototype.dashedLineTo = function(x1, y1, x2, y2, dashLen) {
 var Spaceship = (function() {
 	var _this;
 
-	// Static vars
+	/*  Static vars */
+	// Dimensions
 	var WIDTH = 20;
 	var HEIGHT = 30;
+
+	// Speed
+	var ACCELERATION = 0.0000045; // Pixels per ms to add for each pixel distance from heading
+	var MAX_SPEED = 0.15; // Pixels per ms
+	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
 	function Spaceship() {
 		_this = this;
@@ -50,6 +56,18 @@ var Spaceship = (function() {
 			// Velocity in pixels per ms
 			_this.vx = 0;
 			_this.vy = 0;
+
+			// Location that ship is heading toward
+			_this.xHeading = null;
+			_this.yHeading = null;
+
+			// Speed
+			_this.speed = 0;
+
+			// Last update (so updates can be FPS independent)
+			_this.lastUpdate = new Date().getTime();
+
+			// Max locations for ship
 		},
 		/* Setter function so caching can be setup immediately */
 		setShape : function(shape) {
@@ -59,24 +77,52 @@ var Spaceship = (function() {
 			_this.shape.regY = HEIGHT / 2;
 			_this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
 		},
+		setHeading : function(x, y) {
+			_this.xHeading = x;
+			_this.yHeading = y;
+		},
 		render : function() {
 			_this.shape.x = _this.x;
 			_this.shape.y = _this.y;
 			_this.shape.graphics.clear().beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 		},
-		turnToFace : function(x, y) {
-			var deltaX = _this.x - x;
-			var deltaY = _this.y - y;
+		update : function() {
+			var timeSinceUpdate = new Date().getTime() - _this.lastUpdate;
+			_this.lastUpdate = new Date().getTime();
 
-			// Get angle from x axis to target from 0 to 360
-			var targetAngle = (Math.atan2(deltaY ,deltaX) * 180 / Math.PI) - 90;
-			targetAngle = (targetAngle > -180)? targetAngle : 90 + (270 - Math.abs(targetAngle));
-			targetAngle = (targetAngle > 0)? targetAngle : 360 + targetAngle;
-			var diff = targetAngle - _this.angle;
+			// If target heading is not null adjust current heading and speed
+			if(_this.xHeading !== null && _this.yHeading !== null) {
+				// Calculate hvx and hvy from current location
+				var xDiff = _this.xHeading - _this.x;
+				var yDiff = _this.yHeading - _this.y;
+				var hvx = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  xDiff;
+				var hvy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
 
-			_this.angle += diff;
-			_this.shape.rotation = _this.angle;
-			
+				// Move heading towards target
+				if(_this.vx !== hvx) {
+					var direction = (_this.vx > hvx)? -1 : 1;
+					_this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
+				}
+				if(_this.vy !== hvy) {
+					var direction = (_this.vy > hvy)? -1 : 1;
+					_this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
+				}
+
+				// Set speed based on length of line (no need to be preceise with sqrt)
+				var distanceToHeading = (xDiff + yDiff) / 2;
+				_this.speed += (timeSinceUpdate * ACCELERATION) * Math.abs(distanceToHeading);
+				_this.speed = (_this.speed > MAX_SPEED)? 0 + MAX_SPEED : _this.speed;
+			}
+
+			_this.x += (timeSinceUpdate * _this.speed) * _this.vx;
+			_this.y += (timeSinceUpdate * _this.speed) * _this.vy;
+
+			if(_this.x > _this.maxX) {
+				_this.x = 0;
+			}
+			if(_this.y > _this.maxY) {
+				_this.y = 0;
+			}
 		}
 	}
 
@@ -89,9 +135,10 @@ var Spaceship = (function() {
 var SpaceRocks = (function() {
 	var _this;
 
-	// Global state vars
+	// Global static vars
 	var MAX_WIDTH = 320;
 	var MAX_HEIGHT = 568;
+	var TARGET_FPS = 60;
 	
 	// Constructor
 	function SpaceRocks() {
@@ -129,7 +176,7 @@ var SpaceRocks = (function() {
 			_this.setupEntities();
 
 			// Start ticking
-			createjs.Ticker.setFPS(60);
+			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
 		},
 		setupEntities : function() {
@@ -157,6 +204,8 @@ var SpaceRocks = (function() {
 			_this.ship.setShape(new createjs.Shape());
 			_this.ship.x = (_this.width / 2) - (_this.ship.width / 2);
 			_this.ship.y = (_this.height / 2) - (_this.ship.height / 2);
+			_this.ship.maxX = _this.width;
+			_this.ship.maxY = _this.height;
 			_this.stage.addChild(_this.ship.shape);
 			_this.ship.render();
 			_this.stage.update();
@@ -164,32 +213,44 @@ var SpaceRocks = (function() {
 		attachObservers : function() {
 			_this.background.on("pressmove", function(e) { 
 				_this.redrawNavigationHelper(e);
-				_this.ship.turnToFace(e.stageX, e.stageY);
+				_this.navigationContainer.visible = true;
+				_this.lastTouchX = e.stageX;
+				_this.lastTouchY = e.stageY;
+				_this.ship.setHeading(e.stageX, e.stageY);
 			});
 
 			_this.background.on("pressup", function(e) {
-				_this.navigationContainer.visible = false;
-				setTimeout(function() { _this.stage.update(); }, 500);
+				_this.ship.setHeading(null, null);
+				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
 			});
 		},
 		/**********************************/
 		/** ------ Draw functions ------ **/
 		/**********************************/
-		redrawNavigationHelper : function(e) {
+		redrawNavigationHelper : function(x, y) {
 			// Circle where finger is
-			_this.navigationContainer.visible = true;
 			var navigationCircle = _this.navigationContainer.getChildByName("navigationCircle");
 			var navigationLine = _this.navigationContainer.getChildByName("navigationLine");
-			navigationCircle.x = e.stageX;
-			navigationCircle.y = e.stageY;
+			navigationCircle.x = x;
+			navigationCircle.y = y;
 
-			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.ship.x, _this.ship.y, e.stageX, e.stageY, 4);
+			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.ship.x, _this.ship.y, x, y, 4);
 		},
 
 		tick : function() {
 			_this.meter.begin();
+			
+			// Update and render ship
+			_this.ship.update();
 			_this.ship.render();
+
+			// Draw navigation helper if visible
+			if(_this.navigationContainer.visible) {
+				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
+			}
+
 			_this.stage.update();
+
 			_this.meter.end();
 		},
 	}
