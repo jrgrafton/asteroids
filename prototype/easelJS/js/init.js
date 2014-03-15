@@ -152,7 +152,7 @@ var SpaceRocks = (function() {
 	function SpaceRocks() {
 		_this = this;
 		_this.init();
-		_this.attachObservers();
+		//_this.attachObservers();
 	}
 
 	SpaceRocks.prototype = {
@@ -257,9 +257,9 @@ var SpaceRocks = (function() {
 			//_this.ship.render();
 
 			// Draw navigation helper if visible
-			if(_this.navigationContainer.visible) {
+			//if(_this.navigationContainer.visible) {
 			//	_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
-			}
+			//}
 
 			//_this.stage.update();
 
