@@ -193,10 +193,10 @@ var SpaceRocks = (function() {
 		},
 		setupEntities : function() {
 			// Create background
-			/* _this.background = new createjs.Shape();
+			_this.background = new createjs.Shape();
 			_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
-			_this.background.cache(-_this.width, -_this.height, _this.width * 2, _this.height * 2);
-			_this.stage.addChild(_this.background); */
+			_this.background.cache(-(_this.width * window.devicePixelRatio), -(_this.height * window.devicePixelRatio), (_this.width * window.devicePixelRatio) * 2, (_this.height * window.devicePixelRatio) * 2);
+			_this.stage.addChild(_this.background);
 
 			// Create navigation
 			_this.navigationContainer = new createjs.Container();
