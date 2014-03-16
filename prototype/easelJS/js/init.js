@@ -72,8 +72,8 @@ var Asteroid = (function() {
 			this.shape.graphics.setStrokeStyle(4).beginStroke("#ffffff").drawCircle(0, 0, this.size, this.size);
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.regX = this.shape.width / 2;
-			this.shape.regY = this.shape.width / 2;
+			this.shape.regX = (this.shape.width * window.devicePixelRatio) / 2;
+			this.shape.regY = (this.shape.width * window.devicePixelRatio) / 2;
 			this.shape.cache(-(this.size + 4), 
 							-(this.size + 4), 
 							(this.size * 2) + 8, 
@@ -458,7 +458,7 @@ var SpaceRocks = (function() {
 	var MAX_HEIGHT = 1024;
 	var TARGET_FPS = 60;
 
-	var MOVEMENT_THRESHOLD = 5; // Number of pixels user drags before being considered a touch move
+	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	
 	var INITIAL_ASTEROID_COUNT = 5;
 
