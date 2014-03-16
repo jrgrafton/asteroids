@@ -165,11 +165,6 @@ var Asteroid = (function() {
 			}
 
 			// Draw final line
-			console.log(firstPoint);
-			console.log(currentPoint);
-			//shape.graphics.closePath();
-			//shape.graphics.lineTo(firstPoint.x, firstPoint.y);
-			//shape.graphics.moveTo(currentPoint.x, currentPoint.y);
 			shape.graphics.arcTo(firstPoint.x, firstPoint.y, firstPoint.x, firstPoint.y, 10);
 		},
 		setShape : function(shape) {
