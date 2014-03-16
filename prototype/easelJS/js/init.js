@@ -1,9 +1,64 @@
 /*
 	TODO:
 
-	1. Asteroids
-		a. Render
-		b. Update
+	1. Experiment with retina
+		a. Remove resized canvas
+		b. Enforce scale on cache()
+		c. Verify condition...
+	2. Shape asteroids
+		a. Drawing alogorithm for sizes
+	3. Lives
+		a. Update HUD
+		b. Update player object
+	4. Collisions
+		a. Refactor to genericise detection
+			i. Collidable interface
+			ii. Visitor pattern?
+			iii. Destructable
+			iv. Points?
+		b. Meteor --> player
+		c. Missile --> Meteor
+			a. Setup explosiion radius at detination point
+
+	5. Add alien
+		a. Consider conditions for adding
+		b. Movement?
+		c. Firing at player?
+	6. Additional collisions
+		a. Alien bullet --> player
+		b. Missile --> alien
+		c. Player --> alient
+	7. Add conditions
+		a. Loose a life
+			i. Invulnerable
+		b. Loose all lifes
+			iii. Show end screen
+		c. Destroy all meteors
+	8. Screen state management
+		a. Start screen
+		b. Game screen
+		c. End screen
+	9. GFX
+		a. Start screen
+			i. Buttons
+			ii. Stars
+			iii. Animations (TWEEN)
+		b. In game
+			i. Bitmaps
+				i. Spaceship
+			ii. Effects
+				i. Missile
+				ii. Spaceship accelerating
+				iii. Missile hit on asteroid
+			iii. Animations
+				i. Missile explode
+		c. End game
+			i. Tween appearance
+	10. Gameplay tweaks
+		a. Number of asteroids (per device)
+		b. Ensure no asteroids spawning on player
+		c. Speed and acceration
+		d. Point scoring
 */
 
 /************************************/
