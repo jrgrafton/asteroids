@@ -610,6 +610,13 @@ var SpaceRocks = (function() {
 			_this.mouseUp = null;
 			_this.mouseMove = null;
 
+			// Prevent scrolling on page
+			document.addEventListener(
+			    "touchstart",
+			    function() { return false; },
+			    false
+			);
+						
 			 _this.canvas.addEventListener("touchstart", function(e) {
 			 	_this.mouseDown = e;
 
