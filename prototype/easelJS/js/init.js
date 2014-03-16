@@ -471,10 +471,11 @@ var SpaceRocks = (function() {
 
 			 _this.canvas.addEventListener("touchstart", function(e) {
 			 	_this.mouseDown = e;
+			 	console.log(e);
 
 			 	// Ensure that x and y coords are mapped for render function
-			 	_this.mouseDown.x = e.changedTouches[0].pageX;
-			 	_this.mouseDown.y = e.changedTouches[0].pageY;
+			 	_this.mouseDown.x = e.changedTouches[0].clientX;
+			 	_this.mouseDown.y = e.changedTouches[0].clientY;
 			 });
 
 			 // Manually threshold pressmove event
@@ -482,17 +483,19 @@ var SpaceRocks = (function() {
 			 	_this.mouseMove = e;
 
 				// Ensure that x and y coords are mapped for render function
-			 	_this.mouseMove.x = e.changedTouches[0].pageX;
-			 	_this.mouseMove.y = e.changedTouches[0].pageY;
+			 	_this.mouseMove.x = e.changedTouches[0].clientX;
+			 	_this.mouseMove.y = e.changedTouches[0].clientY;
 			 });
 
 			_this.canvas.addEventListener("touchend", function(e) {	
 			 	_this.mouseUp = e;
-			 	_this.mouseDown = null;
+			 	if(_this.mouseUp.targetTouches.length === 0) {
+			 		_this.mouseDown = null;
+			 	}
 
 			 	// Ensure that x and y coords are mapped for render function
-			 	_this.mouseUp.x = e.changedTouches[0].pageX;
-			 	_this.mouseUp.y = e.changedTouches[0].pageY;
+			 	_this.mouseUp.x = e.changedTouches[0].clientX;
+			 	_this.mouseUp.y = e.changedTouches[0].clientY;
 			});
 
 			_this.canvas.addEventListener("mousedown", function(e) {
