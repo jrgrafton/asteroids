@@ -125,8 +125,8 @@ var Asteroid = (function() {
 		setShape : function(shape) {
 			this.shape = shape;
 			this.shape.graphics.setStrokeStyle(4).beginStroke("#ffffff").drawCircle(0, 0, this.size, this.size);
-			//this.shape.scaleX = window.devicePixelRatio;
-			//this.shape.scaleY = window.devicePixelRatio;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.regX = (this.shape.width * window.devicePixelRatio) / 2;
 			this.shape.regY = (this.shape.width * window.devicePixelRatio) / 2;
 			/* this.shape.cache(-(this.size + 4), 
@@ -538,12 +538,12 @@ var SpaceRocks = (function() {
 
 			// Set dimensions
 			_this.canvas = document.getElementById("spaceRocks");
-			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth  : MAX_WIDTH;
-			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight : MAX_HEIGHT;
+			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH;
+			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT;
 			_this.canvas.width = _this.width;
 			_this.canvas.height = _this.height;
-			_this.canvas.style.width = (_this.width * (1)) + "px";
-			_this.canvas.style.height = (_this.height * (1)) + "px";
+			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
+			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
 
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
