@@ -1,13 +1,7 @@
 /*
 	TODO:
 
-	1. Missile
-		a. speed fixed to ship speed
-		b. layering below player
-	2. Touch controls update
-		a. Manual threshold
-		b. Fire while navigating
-	3. Asteroids
+	1. Asteroids
 		a. Render
 		b. Update
 */
@@ -33,6 +27,92 @@ createjs.Graphics.prototype.dashedLineTo = function(x1, y1, x2, y2, dashLen) {
     this[q % 2 == 0 ? 'moveTo' : 'lineTo'](x2, y2); 
 }
 
+var Asteroid = (function() {
+
+	// Static fields
+	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
+	var SIZES = { // Mapping of "size type" to pixel size
+		0 : 10,
+		1 : 20,
+		2 : 40,
+		3 : 60
+	};
+
+	function Asteroid() {
+		this.init();
+	}
+
+	Asteroid.prototype = {
+		constructor : Asteroid,
+		init : function() {
+			// Velocity components (between 1 and -1)
+			this.vx = ((Math.random()) * 2) - 1;
+			this.vy = ((Math.random()) * 2) - 1;
+
+			// Normalise
+			this.vx = 1 / (Math.abs(this.vx) + Math.abs(this.vy)) * this.vx;
+			this.vy = 1 / (Math.abs(this.vx) + Math.abs(this.vy)) * this.vy;
+
+			// Speed
+			this.speed = SPEED;
+
+			// FPS independent movement
+			this.lastUpdate = new Date().getTime();
+
+			// Current size index
+			this.sizeIndex = 3
+			this.size = SIZES[this.sizeIndex];
+
+			// Max extents
+			this.maxX = Number.MAX_VALUE;
+			this.maxY = Number.MAX_VALUE;
+		},
+		setShape : function(shape) {
+			this.shape = shape;
+			this.shape.graphics.setStrokeStyle(4).beginStroke("#ffffff").drawCircle(0, 0, this.size, this.size);
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.regX = this.shape.width / 2;
+			this.shape.regY = this.shape.width / 2;
+			this.shape.cache(-(this.size + 4), 
+							-(this.size + 4), 
+							(this.size * 2) + 8, 
+							(this.size * 2) + 8, 
+							window.devicePixelRatio);
+			this.shape.snapToPixel = true;
+		},
+		setMaxExtents : function(maxX, maxY) {
+			this.maxX = maxX;
+			this.maxY = maxY;
+		},
+		render : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
+		},
+		update : function() {
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
+
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			// actual : 453, expected: 423 
+
+			// 30 diff
+
+			// Clamp location (origin is in center of shape)
+			console.log(this.x - this.size);
+			console.log(this.maxX);
+			this.x = ((this.x - this.size) > this.maxX)? (0 - this.size) : this.x;
+			this.x = ((this.x + this.size) < 0)? (this.maxX + this.size) : this.x;
+			this.y = ((this.y - this.size) > this.maxY)? (0 - this.size) : this.y;
+			this.y = ((this.y + this.size) < 0)? (this.maxY + this.size) : this.y;
+		}
+	}
+
+	return Asteroid;
+})();
+
 var HUD = (function() {
 	var _this;
 
@@ -57,7 +137,6 @@ var HUD = (function() {
 			_this.score.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
 			_this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
 			_this.score.textAlign = "left";
-			
 
 			_this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
 			_this.missiles.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
@@ -96,8 +175,6 @@ var Missile = (function() {
 	var SIZE = 3;
 
 	function Missile() {
-		//_this = this;
-
 		// Velocity components (between 0 and -1)
 		this.vx = 0;
 		this.vy = 0;
@@ -263,7 +340,7 @@ var Player = (function() {
 			_this.shape.snapToPixel = true;
 		},
 		setMaxExtents : function(maxX, maxY) {
-			_this.maxY = maxX;
+			_this.maxX = maxX;
 			_this.maxY = maxY;
 
 			// Increase speed for displays over 640 wide
@@ -383,6 +460,8 @@ var SpaceRocks = (function() {
 
 	var MOVEMENT_THRESHOLD = 5; // Number of pixels user drags before being considered a touch move
 	
+	var INITIAL_ASTEROID_COUNT = 5;
+
 	// Constructor
 	function SpaceRocks() {
 		_this = this;
@@ -429,14 +508,10 @@ var SpaceRocks = (function() {
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
 			_this.tickCount = 0;
+
+			console.log(_this.width);
 		},
 		setupEntities : function() {
-			// Create background
-			//_this.background = new createjs.Shape();
-			//_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
-			//_this.stage.addChild(_this.background);
-			//_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
-
 			// Create navigation
 			_this.navigationContainer = new createjs.Container();
 			_this.navigationContainer.visible = false;
@@ -457,14 +532,26 @@ var SpaceRocks = (function() {
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
 			_this.player.setMaxExtents(_this.width, _this.height);
-			_this.player.maxX = _this.width;
-			_this.player.maxY = _this.height;
 			_this.stage.addChild(_this.player.shape);
-			_this.player.render();
-			_this.stage.update();
 
 			// Create HUD
 			_this.hud = new HUD(_this, _this.player);
+
+			// Create asteroids
+			_this.asteroids = new Array();
+			for(var i = 0; i < INITIAL_ASTEROID_COUNT; i++) {
+				var asteroid = new Asteroid();
+				asteroid.setShape(new createjs.Shape());
+				
+				// Set random start location
+				asteroid.x = Math.random() * _this.width;
+				asteroid.y = Math.random() * _this.height;
+				asteroid.setMaxExtents(_this.width, _this.height);
+
+				// Add to array and stage
+				_this.asteroids.push(asteroid);
+				_this.stage.addChild(asteroid.shape);
+			}
 		},
 		attachObservers : function() {
 			// Local vars
@@ -511,8 +598,6 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mouseup", function(e) {
 			 	_this.mouseUp = e;
 			 	_this.mouseDown = null;
-
-			 	console.log(e);
 			});
 		},
 		/****************************************/
@@ -563,12 +648,18 @@ var SpaceRocks = (function() {
 			_this.player.update();
 			_this.player.render();
 
-			// Draw navigation helper if visible
+			// Update and render navigation
 			_this.updateNavigation();
 			_this.renderNavigation();
 
-			// Update HUD
+			// Update HUD 
 			_this.hud.update();
+
+			// Update and render asteroids
+			for(var i = 0; i < _this.asteroids.length; i++) {
+				_this.asteroids[i].update();
+				_this.asteroids[i].render();
+			}
 
 			// Draw everything to stage
 			_this.stage.update();
