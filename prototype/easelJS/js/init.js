@@ -1,9 +1,18 @@
 /*
 	TODO:
 
-
 	2. Shape asteroids
 		a. Drawing alogorithm for sizes
+			i. var currentPoint = var firstPont = cx + radius, cy
+			ii. while(angle < (2 * PI - MIN_LINE_DISTANCE))
+				i. angle += Random(between MIN_LINE_DISTANCE and MAX_LINE_DISTANCE)
+				i. var pl = Random(between r and r - variance)
+				ii. var vx = Math.cos(angle)
+				iii. var vy = Math.sin(angle)
+				iv. var nextPoint = cx + (vx * Random(between MIN_RADIUS and MAX_RADIUS))
+				v. draw line between currentPoint and nextPoint (possible intermix with arcTo?)
+			iii. draw line betwee currentPoint and firstPoint (possible intermix with arcTo?)
+
 	3. Lives
 		a. Update HUD
 		b. Update player object
@@ -83,11 +92,11 @@ var Asteroid = (function() {
 
 	// Static fields
 	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
-	var SIZES = { // Mapping of "size type" to pixel size
+	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
 		2 : 40,
-		3 : 60
+		3 : 80
 	};
 
 	function Asteroid() {
@@ -119,18 +128,62 @@ var Asteroid = (function() {
 			this.maxX = Number.MAX_VALUE;
 			this.maxY = Number.MAX_VALUE;
 		},
+		getRandomInRange : function(min, max) {
+			return Math.random() * (max - min) + min;
+		},
+		drawOutline : function(shape) {
+			var asteroidRadius = this.size;
+
+			// Furthest indentation can be from outer edge of circle
+			var minRadius = asteroidRadius * 0.5;
+			var maxRadius = asteroidRadius * 1;
+
+			// Shortest and longest lengths for lines between edges of asteroid
+			var minLineDistance = (2 * Math.PI) / 15;
+			var maxLineDistance = (2 * Math.PI) / 10;
+
+			// First point is at 0 rad
+			var distanceFromCenter = this.getRandomInRange(minRadius, maxRadius);
+			var firstPoint = new createjs.Point(distanceFromCenter, 0);
+			var currentPoint = firstPoint;
+			var angle = 0.0;
+			var vx = 1;
+			var vy = 0;
+			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
+			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
+			while(angle < ((2 * Math.PI) - maxLineDistance)) {
+				//shape.graphics.setStrokeStyle(4).beginRadialGradientStroke(["#F00","#00F"], [0, 1], 100, 100, 0, 100, 100, 50);
+				var lineLength = this.getRandomInRange(minLineDistance, maxLineDistance);
+				angle += this.getRandomInRange(minLineDistance, maxLineDistance);
+				distanceFromCenter = this.getRandomInRange(minRadius, maxRadius);
+				vx = Math.cos(angle);
+				vy = Math.sin(angle);
+				nextPoint = new createjs.Point(vx * distanceFromCenter, vy * distanceFromCenter);
+				//shape.graphics.lineTo(nextPoint.x, nextPoint.y);
+				shape.graphics.arcTo(currentPoint.x, currentPoint.y,  nextPoint.x,  nextPoint.y,  20);
+				currentPoint = nextPoint;
+			}
+
+			// Draw final line
+			console.log(firstPoint);
+			console.log(currentPoint);
+			//shape.graphics.closePath();
+			//shape.graphics.lineTo(firstPoint.x, firstPoint.y);
+			//shape.graphics.moveTo(currentPoint.x, currentPoint.y);
+			shape.graphics.arcTo(firstPoint.x, firstPoint.y, firstPoint.x, firstPoint.y, 10);
+		},
 		setShape : function(shape) {
 			this.shape = shape;
-			this.shape.graphics.setStrokeStyle(4).beginStroke("#ffffff").drawCircle(0, 0, this.size, this.size);
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.regX = (this.shape.width * window.devicePixelRatio) / 2;
-			this.shape.regY = (this.shape.width * window.devicePixelRatio) / 2;
-			/* this.shape.cache(-(this.size + 4), 
+			//this.shape.regX = (this.size * window.devicePixelRatio);
+			//this.shape.regY = (this.size * window.devicePixelRatio);
+			this.drawOutline(this.shape);
+			this.shape.cache(-(this.size + 4), 
 							-(this.size + 4), 
 							(this.size * 2) + 8, 
 							(this.size * 2) + 8, 
-							window.devicePixelRatio); */
+							window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 		},
 		setMaxExtents : function(maxX, maxY) {
@@ -147,10 +200,6 @@ var Asteroid = (function() {
 
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
-
-			// actual : 453, expected: 423 
-
-			// 30 diff
 
 			// Clamp location (origin is in center of shape)
 			this.x = (this.x - (this.size * window.devicePixelRatio) > this.maxX)? (0 - this.size * window.devicePixelRatio) : this.x;
@@ -589,12 +638,12 @@ var SpaceRocks = (function() {
 			_this.asteroids = new Array();
 			for(var i = 0; i < INITIAL_ASTEROID_COUNT; i++) {
 				var asteroid = new Asteroid();
-				asteroid.setShape(new createjs.Shape());
 				
 				// Set random start location
 				asteroid.x = Math.random() * _this.width;
 				asteroid.y = Math.random() * _this.height;
 				asteroid.setMaxExtents(_this.width, _this.height);
+				asteroid.setShape(new createjs.Shape());
 
 				// Add to array and stage
 				_this.asteroids.push(asteroid);
