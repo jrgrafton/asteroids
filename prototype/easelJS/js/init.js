@@ -561,8 +561,6 @@ var SpaceRocks = (function() {
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
 			_this.tickCount = 0;
-
-			console.log(_this.width);
 		},
 		setupEntities : function() {
 			// Create navigation
@@ -726,4 +724,5 @@ var SpaceRocks = (function() {
 
 window.onload = function() {
 	window.SpaceRocks = new SpaceRocks(); 
+	setTimeout(function() { window.scrollTo(0, 1) }, 100);
 }
