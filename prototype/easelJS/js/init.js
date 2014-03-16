@@ -542,8 +542,8 @@ var SpaceRocks = (function() {
 			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight : MAX_HEIGHT;
 			_this.canvas.width = _this.width;
 			_this.canvas.height = _this.height;
-			_this.canvas.style.width = (_this.width * (1 / window.devicePixelRatio)) + "px";
-			_this.canvas.style.height = (_this.height * ( 1 / window.devicePixelRatio)) + "px";
+			_this.canvas.style.width = (_this.width * (1)) + "px";
+			_this.canvas.style.height = (_this.height * (1)) + "px";
 
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
