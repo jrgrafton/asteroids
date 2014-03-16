@@ -1,3 +1,17 @@
+/*
+	TODO:
+
+	1. Missile
+		a. speed fixed to ship speed
+		b. layering below player
+	2. Touch controls update
+		a. Manual threshold
+		b. Fire while navigating
+	3. Asteroids
+		a. Render
+		b. Update
+*/
+
 /************************************/
 /** ------ EaselJS additions------ **/
 /************************************/
@@ -40,14 +54,14 @@ var HUD = (function() {
 
 			_this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
 			_this.score.x = 0;
-			_this.score.y = _this.game.height - _this.score.getBounds().height;
+			_this.score.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
 			_this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
 			_this.score.textAlign = "left";
 			
 
 			_this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
-			_this.missiles.y = _this.game.height - _this.score.getBounds().height;
-			_this.missiles.x = _this.game.width - _this.missiles.getBounds().width;
+			_this.missiles.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
+			_this.missiles.x = _this.game.width - (_this.missiles.getBounds().width * window.devicePixelRatio);
 			_this.missiles.scaleX = _this.missiles.scaleY = window.devicePixelRatio;
 			_this.missiles.textAlign = "left";
 			
@@ -61,7 +75,6 @@ var HUD = (function() {
 		update : function() {
 			_this.score.text = "Score: " + _this.game.score;
 			_this.missiles.text = "Missiles: " + _this.player.missileCount;
-			//_this.container.cache();
 		}
 	}
 
@@ -93,7 +106,7 @@ var Missile = (function() {
 		this.yHeading = null;
 
 		// Speed
-		this.speed = 0.5;
+		this.speed = 0;
 
 		// FPS independent movement
 		this.lastUpdate = new Date().getTime();
@@ -176,6 +189,7 @@ var Player = (function() {
 	// Data fields
 	var MAX_MISSILES = 5;
 	var MISSILE_RECHARGE_TIME = 1000; // in ms
+	var MISSILE_INITIAL_SPEED = 1.4; // Mltiplier for missile exit speed
 
 	function Player(game) {
 		_this = this;
@@ -331,8 +345,9 @@ var Player = (function() {
 				missile.vy = _this.vy;
 				missile.x = _this.x + (_this.vx * (_this.width / 2));	// TODO: Poisiton missile at middle top of ship
 				missile.y = _this.y + (_this.vy * (_this.height / 2));	// TODO: Poisiton missile at middle top of ship
+				missile.speed = _this.speed * MISSILE_INITIAL_SPEED;
 				_this.activeMissiles.push(missile);
-				_this.game.stage.addChild(shape);
+				_this.game.stage.addChildAt(shape, 1); // Ensure that missile is rendered under ship
 				_this.missileFired = false;
 			}
 
@@ -362,6 +377,8 @@ var SpaceRocks = (function() {
 	var MAX_WIDTH = 768;
 	var MAX_HEIGHT = 1024;
 	var TARGET_FPS = 60;
+
+	var MOVEMENT_THRESHOLD = 5; // Number of pixels user drags before being considered a touch move
 	
 	// Constructor
 	function SpaceRocks() {
@@ -385,13 +402,13 @@ var SpaceRocks = (function() {
 			document.body.appendChild( _this.meter.domElement );
 
 			// Set dimensions
-			var canvas = document.getElementById("spaceRocks");
+			_this.canvas = document.getElementById("spaceRocks");
 			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH;
 			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT;
-			canvas.width = _this.width;
-			canvas.height = _this.height;
-			canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
-			canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
+			_this.canvas.width = _this.width;
+			_this.canvas.height = _this.height;
+			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
+			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
 
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("spaceRocks");
@@ -408,12 +425,13 @@ var SpaceRocks = (function() {
 			// Start ticking
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
+			_this.tickCount = 0;
 		},
 		setupEntities : function() {
 			// Create background
-			_this.background = new createjs.Shape();
-			_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
-			_this.stage.addChild(_this.background);
+			//_this.background = new createjs.Shape();
+			//_this.background.graphics.beginFill("#000000").drawRect(0, 0, _this.width, _this.height);
+			//_this.stage.addChild(_this.background);
 			//_this.background.cache(-_this.width, -_this.height, (_this.width  * 2), (_this.height * 2));
 
 			// Create navigation
@@ -446,44 +464,104 @@ var SpaceRocks = (function() {
 			_this.hud = new HUD(_this, _this.player);
 		},
 		attachObservers : function() {
-			 _this.background.on("pressmove", function(e) {
-			 	_this.navigationContainer.visible = true;
-				_this.lastTouchX = e.stageX;
-				_this.lastTouchY = e.stageY;
-				_this.player.setHeading(e.stageX, e.stageY);
+			// Local vars
+			_this.mouseDown = null;
+			_this.mouseUp = null;
+			_this.mouseMove = null;
+
+			 _this.canvas.addEventListener("touchstart", function(e) {
+			 	_this.mouseDown = e;
+
+			 	// Ensure that x and y coords are mapped for render function
+			 	_this.mouseDown.x = e.changedTouches[0].pageX;
+			 	_this.mouseDown.y = e.changedTouches[0].pageY;
 			 });
 
-			 _this.background.on("pressup", function(e) {
-			 	if(!_this.navigationContainer.visible) {
-			 		_this.player.fireMissile(e.stageX, e.stageY);
-			 	}
-				_this.player.setHeading(null, null);
-				setTimeout(function() { _this.navigationContainer.visible = false; }, 500);
+			 // Manually threshold pressmove event
+			_this.canvas.addEventListener("touchmove", function(e) {
+			 	_this.mouseMove = e;
+
+				// Ensure that x and y coords are mapped for render function
+			 	_this.mouseMove.x = e.changedTouches[0].pageX;
+			 	_this.mouseMove.y = e.changedTouches[0].pageY;
 			 });
+
+			_this.canvas.addEventListener("touchend", function(e) {	
+			 	_this.mouseUp = e;
+			 	_this.mouseDown = null;
+
+			 	// Ensure that x and y coords are mapped for render function
+			 	_this.mouseUp.x = e.changedTouches[0].pageX;
+			 	_this.mouseUp.y = e.changedTouches[0].pageY;
+			});
+
+			_this.canvas.addEventListener("mousedown", function(e) {
+			 	_this.mouseDown = e;
+			});
+
+			_this.canvas.addEventListener("mousemove", function(e) {
+				_this.mouseMove = e;
+			});
+
+			_this.canvas.addEventListener("mouseup", function(e) {
+			 	_this.mouseUp = e;
+			 	_this.mouseDown = null;
+
+			 	console.log(e);
+			});
 		},
-		/**********************************/
-		/** ------ Draw functions ------ **/
-		/**********************************/
-		redrawNavigationHelper : function(x, y) {
+		/****************************************/
+		/** ------ Navigation functions ------ **/
+		/****************************************/
+		updateNavigation : function() {
+			// If mouse is released and navigation is not shown
+			// or use has touched with a different finger
+			if(_this.mouseUp !== null && (!_this.navigationContainer.visible || 
+				_this.mouseUp.targetTouches != null && _this.mouseUp.targetTouches.length > 0)) {
+
+				_this.player.fireMissile(_this.mouseUp.x, _this.mouseUp.y);
+				_this.mouseUp = null;
+			}
+
+			// If user is click dragging show navigation if movement is over thresholding
+			if(_this.mouseDown !== null && _this.mouseMove !== null) {
+				var distance = (Math.abs(_this.mouseDown.x - _this.mouseMove.x) + Math.abs(_this.mouseDown.y - _this.mouseMove.y)) / 2;
+		 		if(distance > MOVEMENT_THRESHOLD) {
+		 			_this.navigationContainer.visible = true;
+					_this.lastTouchX = _this.mouseMove.x;
+					_this.lastTouchY = _this.mouseMove.y;
+					_this.player.setHeading(_this.mouseMove.x, _this.mouseMove.y);
+		 		}
+			} else {
+				_this.player.setHeading(null, null);
+				_this.navigationContainer.visible = false;
+				_this.mouseUp = null;
+				_this.mouseMove = null;
+			}
+		},
+
+		renderNavigation : function() {
 			// Circle where finger is
 			var navigationCircle = _this.navigationContainer.getChildByName("navigationCircle");
 			var navigationLine = _this.navigationContainer.getChildByName("navigationLine");
-			navigationCircle.x = x;
-			navigationCircle.y = y;
+			navigationCircle.x = _this.lastTouchX;
+			navigationCircle.y = this.lastTouchY;
 
-			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.player.x, _this.player.y, x, y, 4);
+			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.player.x, _this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
 
 		tick : function() {
 			_this.meter.begin();
+			++_this.tickCount;
 
 			// Update and render player
 			_this.player.update();
 			_this.player.render();
+
 			// Draw navigation helper if visible
-			if(_this.navigationContainer.visible) {
-				_this.redrawNavigationHelper(_this.lastTouchX, _this.lastTouchY);
-			}
+			_this.updateNavigation();
+			_this.renderNavigation();
+
 			// Update HUD
 			_this.hud.update();
 
