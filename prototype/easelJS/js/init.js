@@ -89,6 +89,7 @@ var Missile = (function() {
 
 	var ACCELERATION = (0.00002 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = (0.45 * window.devicePixelRatio); // Pixels per ms
+	var MIN_SPEED = (0.2 * window.devicePixelRatio); // Pixels per ms
 	var TURN_SPEED = 0.0006; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
@@ -159,6 +160,8 @@ var Missile = (function() {
 
 			// Update speed
 			this.speed += ACCELERATION * timeSinceUpdate;
+			this.speed = (this.speed < MIN_SPEED)? MIN_SPEED : this.speed;
+			this.speed = (this.speed > MAX_SPEED)? MAX_SPEED : this.speed;
 
 			// Update location
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
