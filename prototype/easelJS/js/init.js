@@ -125,8 +125,8 @@ var Asteroid = (function() {
 		setShape : function(shape) {
 			this.shape = shape;
 			this.shape.graphics.setStrokeStyle(4).beginStroke("#ffffff").drawCircle(0, 0, this.size, this.size);
-			this.shape.scaleX = window.devicePixelRatio;
-			this.shape.scaleY = window.devicePixelRatio;
+			//this.shape.scaleX = window.devicePixelRatio;
+			//this.shape.scaleY = window.devicePixelRatio;
 			this.shape.regX = (this.shape.width * window.devicePixelRatio) / 2;
 			this.shape.regY = (this.shape.width * window.devicePixelRatio) / 2;
 			/* this.shape.cache(-(this.size + 4), 
