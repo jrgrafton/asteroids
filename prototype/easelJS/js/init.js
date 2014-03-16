@@ -74,11 +74,11 @@ var Asteroid = (function() {
 			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.regX = (this.shape.width * window.devicePixelRatio) / 2;
 			this.shape.regY = (this.shape.width * window.devicePixelRatio) / 2;
-			this.shape.cache(-(this.size + 4), 
+			/* this.shape.cache(-(this.size + 4), 
 							-(this.size + 4), 
 							(this.size * 2) + 8, 
 							(this.size * 2) + 8, 
-							window.devicePixelRatio);
+							window.devicePixelRatio); */
 			this.shape.snapToPixel = true;
 		},
 		setMaxExtents : function(maxX, maxY) {
@@ -101,12 +101,10 @@ var Asteroid = (function() {
 			// 30 diff
 
 			// Clamp location (origin is in center of shape)
-			console.log(this.x - this.size);
-			console.log(this.maxX);
-			this.x = ((this.x - this.size) > this.maxX)? (0 - this.size) : this.x;
-			this.x = ((this.x + this.size) < 0)? (this.maxX + this.size) : this.x;
-			this.y = ((this.y - this.size) > this.maxY)? (0 - this.size) : this.y;
-			this.y = ((this.y + this.size) < 0)? (this.maxY + this.size) : this.y;
+			this.x = (this.x - (this.size * window.devicePixelRatio) > this.maxX)? (0 - this.size * window.devicePixelRatio) : this.x;
+			this.x = (this.x + (this.size * window.devicePixelRatio) < 0)? (this.maxX + this.size * window.devicePixelRatio) : this.x;
+			this.y = (this.y - (this.size * window.devicePixelRatio) > this.maxY)? (0 - this.size * window.devicePixelRatio) : this.y;
+			this.y = (this.y + (this.size * window.devicePixelRatio) < 0)? (this.maxY + this.size * window.devicePixelRatio) : this.y;
 		}
 	}
 
