@@ -84,15 +84,14 @@ var Entity = (function() {
 	function Entity() {};
 
 	// Used to normalise all entity collisions and updates in game
-	Entity.prototype = {
+	return {
 		constructor : Entity,
 		update : function(){},
 		render : function(){},
+		setShape : function(){},
 		collideWith : function(entity){},
 		isDead : function(){ return false; }
 	}
-
-	return Entity;
 })();
 
 
@@ -111,7 +110,9 @@ var Asteroid = (function(Entity) {
 	function Asteroid() {
 		// Mixin entity base class
 		for(var method in Entity) {
-			this.method = method;
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
 		}
 		this.init();
 	}
@@ -265,8 +266,6 @@ var HUD = (function() {
 			this.container.addChild(this.score);
 			this.container.addChild(this.missiles);
 			this.container.addChild(this.lives);
-			//this.container.cache(-this.container.width, -this.container.height, this.container.width, this.container.height);
-
 			 window.spaceRocks.stage.addChild(this.container);
 		},
 		update : function() {
@@ -289,7 +288,9 @@ var MissileExplosion =  (function(Entity) {
 	function MissileExplosion() {
 		// Mixin entity base class
 		for(var method in Entity) {
-			this.method = method;
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
 		}
 
 		// Explosion start time
@@ -348,7 +349,9 @@ var Missile = (function(Entity) {
 	function Missile() {
 		// Mixin entity base class
 		for(var method in Entity) {
-			this.method = method;
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
 		}
 
 		// Velocity components (between 0 and -1)
@@ -419,10 +422,9 @@ var Missile = (function(Entity) {
 			// Update location
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
-
-			if(Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10) {
-				this.exploded = true;
-			}
+		},
+		isDead : function() {
+			return (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10);
 		}
 	}
 
@@ -448,9 +450,10 @@ var Player = (function(Entity) {
 	function Player() {
 		// Mixin entity base class
 		for(var method in Entity) {
-			this.method = method;
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
 		}
-
 		// Scale based on canvas size
 		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
@@ -584,7 +587,7 @@ var Player = (function(Entity) {
 				++this.missileCount;
 			}
 
-			// Update all missiles
+			// Create missiles
 			if(this.missileCount > 0 && this.missileFired) {
 				// Adjust missile count for player
 				--this.missileCount;
@@ -600,21 +603,9 @@ var Player = (function(Entity) {
 				missile.x = this.x + (this.vx * (this.width / 2));	// TODO: Poisiton missile at middle top of ship
 				missile.y = this.y + (this.vy * (this.height / 2));	// TODO: Poisiton missile at middle top of ship
 				missile.speed = this.speed * MISSILE_INITIAL_SPEED;
-				this.activeMissiles.push(missile);
-				window.spaceRocks.stage.addChildAt(shape, 1); // Ensure that missile is rendered under ship
+				
+				window.spaceRocks.addEntity(missile, 1);
 				this.missileFired = false;
-			}
-
-			// Remove expired missiles
-			for(var i = 0; i < this.activeMissiles.length; i++) {
-				if(this.activeMissiles[i] == null) continue;
-				if(this.activeMissiles[i].exploded) {
-					window.spaceRocks.stage.removeChild(this.activeMissiles[i].shape);
-					//delete this.activeMissiles[i];
-				} else {
-					this.activeMissiles[i].update();
-					this.activeMissiles[i].render();
-				}
 			}
 		}
 	}
@@ -643,9 +634,11 @@ var SpaceRocks = (function() {
 		_this.init();
 		_this.attachObservers();
 
+		// Setup entity array
+		_this.entities = new Array();
+
 		// Expose public functions
-		this.setupEntities = SpaceRocks.prototype.setupEntities;
-		this.startTicking = SpaceRocks.prototype.startTicking;
+		this.start = SpaceRocks.prototype.start;
 		this.getDimensions = SpaceRocks.prototype.getDimensions;
 	}
 
@@ -679,13 +672,11 @@ var SpaceRocks = (function() {
 			_this.stage.enableMouseOver(10);
 			_this.stage.snapToPixelEnabled = true;
 
-			// Setup initial entities
-			//_this.setupEntities();
-
 			// Setup score
 			_this.score = Math.floor(Math.random() * 100);
 		},
-		startTicking : function() {
+		start : function() {
+			_this.setupEntities();
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
 		},
@@ -709,13 +700,12 @@ var SpaceRocks = (function() {
 			_this.player.setShape(new createjs.Shape());
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
-			_this.stage.addChild(_this.player.shape);
+			_this.addEntity(_this.player);
 
 			// Create HUD
 			_this.hud = new HUD(_this, _this.player);
 
 			// Create asteroids
-			_this.asteroids = new Array();
 			for(var i = 0; i < INITIAL_ASTEROID_COUNT; i++) {
 				var asteroid = new Asteroid();
 				
@@ -724,9 +714,8 @@ var SpaceRocks = (function() {
 				asteroid.y = Math.random() * _this.height;
 				asteroid.setShape(new createjs.Shape());
 
-				// Add to array and stage
-				_this.asteroids.push(asteroid);
-				_this.stage.addChild(asteroid.shape);
+				// Add to entity list
+				_this.addEntity(asteroid);
 			}
 		},
 		attachObservers : function() {
@@ -823,8 +812,10 @@ var SpaceRocks = (function() {
 			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
 
-		addEntity : function() {
+		addEntity : function(entity, index) {
 			// Adds object that conforms to entity interface
+			_this.entities.push(entity);
+			_this.stage.addChild(entity.shape);
 		},
 
 		getDimensions : function() {
@@ -835,10 +826,6 @@ var SpaceRocks = (function() {
 			_this.meter.begin();
 			++this.tickCount;
 
-			// Update and render player
-			_this.player.update();
-			_this.player.render();
-
 			// Update and render navigation
 			_this.updateNavigation();
 			_this.renderNavigation();
@@ -846,10 +833,18 @@ var SpaceRocks = (function() {
 			// Update HUD 
 			_this.hud.update();
 
-			// Update and render asteroids
-			for(var i = 0; i < _this.asteroids.length; i++) {
-				_this.asteroids[i].update();
-				_this.asteroids[i].render();
+			// Update and render entities
+			for(var i = 0; i < _this.entities.length; i++) {
+				if(_this.entities[i] == null) continue;
+
+				_this.entities[i].update();
+				_this.entities[i].render();
+
+				// Check to see if entity is dead
+				if(_this.entities[i].isDead()) {
+					_this.stage.removeChild(_this.entities[i].shape);
+					delete _this.entities[i];
+				}
 			}
 
 			// Draw everything to stage
@@ -864,6 +859,5 @@ var SpaceRocks = (function() {
 
 window.onload = function() {
 	window.spaceRocks = new SpaceRocks(); 
-	window.spaceRocks.setupEntities();
-	window.spaceRocks.startTicking();
+	window.spaceRocks.start();
 }
