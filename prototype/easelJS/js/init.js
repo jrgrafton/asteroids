@@ -1,21 +1,9 @@
 /*
 	TODO:
 
-	2. Shape asteroids
-		a. Drawing alogorithm for sizes
-			i. var currentPoint = var firstPont = cx + radius, cy
-			ii. while(angle < (2 * PI - MIN_LINE_DISTANCE))
-				i. angle += Random(between MIN_LINE_DISTANCE and MAX_LINE_DISTANCE)
-				i. var pl = Random(between r and r - variance)
-				ii. var vx = Math.cos(angle)
-				iii. var vy = Math.sin(angle)
-				iv. var nextPoint = cx + (vx * Random(between MIN_RADIUS and MAX_RADIUS))
-				v. draw line between currentPoint and nextPoint (possible intermix with arcTo?)
-			iii. draw line betwee currentPoint and firstPoint (possible intermix with arcTo?)
-
-	3. Lives
-		a. Update HUD
-		b. Update player object
+	2. Explosions
+		a. Exlode time
+		b. Explode radius
 	4. Collisions
 		a. Refactor to genericise detection
 			i. Collidable interface
@@ -88,18 +76,43 @@ createjs.Graphics.prototype.dashedLineTo = function(x1, y1, x2, y2, dashLen) {
     this[q % 2 == 0 ? 'moveTo' : 'lineTo'](x2, y2); 
 }
 
-var Asteroid = (function() {
+/************************************/
+/** ------ Entity Interface ------ **/
+/************************************/
+var Entity = (function() {
+
+	function Entity() {};
+
+	// Used to normalise all entity collisions and updates in game
+	Entity.prototype = {
+		constructor : Entity,
+		update : function(){},
+		render : function(){},
+		collideWith : function(entity){},
+		isDead : function(){ return false; }
+	}
+
+	return Entity;
+})();
+
+
+var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
+	var SPEED = (0.0125 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
 		2 : 40,
 		3 : 80
 	};
+	var ROTATION_SPEED = 0.090; // in degrees per ms
 
 	function Asteroid() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			this.method = method;
+		}
 		this.init();
 	}
 
@@ -115,7 +128,7 @@ var Asteroid = (function() {
 			this.vy = 1 / (Math.abs(this.vx) + Math.abs(this.vy)) * this.vy;
 
 			// Speed
-			this.speed = SPEED;
+			this.speed = SPEED * (Math.random() + 0.5);
 
 			// FPS independent movement
 			this.lastUpdate = new Date().getTime();
@@ -125,8 +138,15 @@ var Asteroid = (function() {
 			this.size = SIZES[this.sizeIndex];
 
 			// Max extents
-			this.maxX = Number.MAX_VALUE;
-			this.maxY = Number.MAX_VALUE;
+			this.maxX = window.spaceRocks.getDimensions().width;
+			this.maxY = window.spaceRocks.getDimensions().height;
+
+			// Rotation speed and angle (in degress per ms)
+			this.rotation = 0;
+			this.rotationSpeed = ROTATION_SPEED * (Math.random() + 0.5);
+			if(Math.floor(Math.random() * 100) % 2 === 0) {
+				this.rotationSpeed = 0 - this.rotationSpeed;
+			}
 		},
 		getRandomInRange : function(min, max) {
 			return Math.random() * (max - min) + min;
@@ -135,12 +155,12 @@ var Asteroid = (function() {
 			var asteroidRadius = this.size;
 
 			// Furthest indentation can be from outer edge of circle
-			var minRadius = asteroidRadius * 0.5;
+			var minRadius = asteroidRadius * 0.6;
 			var maxRadius = asteroidRadius * 1;
 
 			// Shortest and longest lengths for lines between edges of asteroid
-			var minLineDistance = (2 * Math.PI) / 15;
-			var maxLineDistance = (2 * Math.PI) / 10;
+			var minLineDistance = (2 * Math.PI) / 20;
+			var maxLineDistance = (2 * Math.PI) / 15;
 
 			// First point is at 0 rad
 			var distanceFromCenter = this.getRandomInRange(minRadius, maxRadius);
@@ -152,20 +172,20 @@ var Asteroid = (function() {
 			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
 			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
 			while(angle < ((2 * Math.PI) - maxLineDistance)) {
-				//shape.graphics.setStrokeStyle(4).beginRadialGradientStroke(["#F00","#00F"], [0, 1], 100, 100, 0, 100, 100, 50);
 				var lineLength = this.getRandomInRange(minLineDistance, maxLineDistance);
 				angle += this.getRandomInRange(minLineDistance, maxLineDistance);
 				distanceFromCenter = this.getRandomInRange(minRadius, maxRadius);
 				vx = Math.cos(angle);
 				vy = Math.sin(angle);
 				nextPoint = new createjs.Point(vx * distanceFromCenter, vy * distanceFromCenter);
-				//shape.graphics.lineTo(nextPoint.x, nextPoint.y);
-				shape.graphics.arcTo(currentPoint.x, currentPoint.y,  nextPoint.x,  nextPoint.y,  20);
+				shape.graphics.arcTo(currentPoint.x, currentPoint.y,  nextPoint.x,  nextPoint.y,  asteroidRadius / 6);
 				currentPoint = nextPoint;
 			}
 
-			// Draw final line
-			shape.graphics.arcTo(firstPoint.x, firstPoint.y, firstPoint.x, firstPoint.y, 10);
+			// Draw final line (@TODO look into curveTo)
+			shape.graphics.arcTo(firstPoint.x, currentPoint.y, firstPoint.x, firstPoint.y, 5);
+			shape.graphics.lineTo(firstPoint.x, firstPoint.y);
+			shape.graphics.endStroke();
 		},
 		setShape : function(shape) {
 			this.shape = shape;
@@ -181,13 +201,12 @@ var Asteroid = (function() {
 							window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 		},
-		setMaxExtents : function(maxX, maxY) {
-			this.maxX = maxX;
-			this.maxY = maxY;
-		},
 		render : function() {
+			// @TODO render parts on opposite sceen when rendering goes offscreen
 			this.shape.x = this.x;
 			this.shape.y = this.y;
+			this.shape.rotation = this.rotation;
+			//console.log(this.rotation);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -196,58 +215,64 @@ var Asteroid = (function() {
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
 
-			// Clamp location (origin is in center of shape)
+			// Clamp location (origin is in top left of shape)
 			this.x = (this.x - (this.size * window.devicePixelRatio) > this.maxX)? (0 - this.size * window.devicePixelRatio) : this.x;
 			this.x = (this.x + (this.size * window.devicePixelRatio) < 0)? (this.maxX + this.size * window.devicePixelRatio) : this.x;
 			this.y = (this.y - (this.size * window.devicePixelRatio) > this.maxY)? (0 - this.size * window.devicePixelRatio) : this.y;
 			this.y = (this.y + (this.size * window.devicePixelRatio) < 0)? (this.maxY + this.size * window.devicePixelRatio) : this.y;
+
+			// Rotate asteroid
+			this.rotation += this.rotationSpeed;
 		}
 	}
 
 	return Asteroid;
-})();
+})(Entity);
 
 var HUD = (function() {
-	var _this;
-
-	function HUD(game, player) {
+	function HUD() {
 		// Set player and game objects
-		_this = this;
-		_this.game = game;
-		_this.player = player;
-		_this.init();
+		this.init();
 	}
 
 	HUD.prototype = {
 		constructor : HUD,
 		init : function() {
-			_this.container = new createjs.Container();
-			_this.container.x = _this.container.y = 0;
-			_this.container.width = _this.game.width;
-			_this.container.height = _this.game.height / 10;
+			this.container = new createjs.Container();
+			this.container.x = this.container.y = 0;
+			this.container.width = window.spaceRocks.getDimensions().width;
+			this.container.height = window.spaceRocks.getDimensions().height / 10;
 
-			_this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
-			_this.score.x = 0;
-			_this.score.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
-			_this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
-			_this.score.textAlign = "left";
+			this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
+			this.score.x = 0;
+			this.score.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
+			this.score.textAlign = "left";
 
-			_this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
-			_this.missiles.y = _this.game.height - (_this.score.getBounds().height * window.devicePixelRatio);
-			_this.missiles.x = _this.game.width - (_this.missiles.getBounds().width * window.devicePixelRatio);
-			_this.missiles.scaleX = _this.missiles.scaleY = window.devicePixelRatio;
-			_this.missiles.textAlign = "left";
+			this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
+			this.missiles.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.missiles.x = window.spaceRocks.getDimensions().width - (this.missiles.getBounds().width * window.devicePixelRatio);
+			this.missiles.scaleX = this.missiles.scaleY = window.devicePixelRatio;
+			this.missiles.textAlign = "left";
+
+			this.lives = new createjs.Text("Lives: 3", "20px Arial", "#ffffff");
+			this.lives.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.lives.x = window.spaceRocks.getDimensions().width - (window.spaceRocks.getDimensions().width / 2) - ((this.lives.getBounds().width * window.devicePixelRatio) / 2);
+			this.lives.scaleX = this.lives.scaleY = window.devicePixelRatio;
+			this.lives.textAlign = "left";
 			
 			// Add text to stage
-			_this.container.addChild(_this.score);
-			_this.container.addChild(_this.missiles);
-			//_this.container.cache(-_this.container.width, -_this.container.height, _this.container.width, _this.container.height);
+			this.container.addChild(this.score);
+			this.container.addChild(this.missiles);
+			this.container.addChild(this.lives);
+			//this.container.cache(-this.container.width, -this.container.height, this.container.width, this.container.height);
 
-			_this.game.stage.addChild(_this.container);
+			 window.spaceRocks.stage.addChild(this.container);
 		},
 		update : function() {
-			_this.score.text = "Score: " + _this.game.score;
-			_this.missiles.text = "Missiles: " + _this.player.missileCount;
+			this.score.text = "Score: " + window.spaceRocks.score;
+			this.missiles.text = "Missiles: " + window.spaceRocks.player.missileCount;
+			this.lives.text = "Lives: " + window.spaceRocks.player.lifeCount;
 		}
 	}
 
@@ -257,8 +282,60 @@ var HUD = (function() {
 /**************************/
 /** ------ Player ------ **/
 /**************************/
-var Missile = (function() {
-	//var _this;
+var MissileExplosion =  (function(Entity) {
+	var EXPLOSION_TIME = 2000; // Explosion length in ms
+	var EXPLOSION_RADIUS = 20; // Explosion radius in pixels
+
+	function MissileExplosion() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			this.method = method;
+		}
+
+		// Explosion start time
+		this.explositionStart = new Date().getTime();
+		this.radius = 1;
+
+		// So that animation can be time related
+		this.lastUpdate = new Date().getTime();
+	}
+
+	function setShape(shape) {
+		this.shape = shape;
+		this.shape.scaleX = window.devicePixelRatio;
+		this.shape.scaleY = window.devicePixelRatio;
+		this.shape.regX = (this.size * window.devicePixelRatio);
+		this.shape.regY = (this.size * window.devicePixelRatio);
+		this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
+		this.shape.snapToPixel = true;
+	}
+
+	function render() {
+		this.shape.graphics.clear().beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
+	}
+
+	function update() {
+		this.shape.x = this.x;
+		this.shape.y = this.y;
+
+		// Expand or contract size based on time since explosion
+		this.timeSinceExplosion = new Date().getTime() - this.explositionStart;
+		this.timeSinceLastUpdate = new Date().getTime() - this.lastUpdate;
+
+		// If it's passed halfway start contracting
+		var pixelsPerMS = EXPLOSION_RADIUS / EXPLOSION_TIME;
+		if(this.timeSinceExplosion > EXPLOSION_TIME / 2) {
+			this.radius -= pixelsPerMS * this.timeSinceLastUpdate;
+		} else {
+			this.radius += pixelsPerMS * this.timeSinceLastUpdate;
+		}
+	}
+
+	return MissileExplosion;
+})(Entity)
+
+var Missile = (function(Entity) {
+	//var this;
 
 	var ACCELERATION = (0.00002 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
 	var MAX_SPEED = (0.45 * window.devicePixelRatio); // Pixels per ms
@@ -269,6 +346,11 @@ var Missile = (function() {
 	var SIZE = 3;
 
 	function Missile() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			this.method = method;
+		}
+
 		// Velocity components (between 0 and -1)
 		this.vx = 0;
 		this.vy = 0;
@@ -345,11 +427,9 @@ var Missile = (function() {
 	}
 
 	return Missile;
-})();
+})(Entity);
 
-var Player = (function() {
-	var _this;
-
+var Player = (function(Entity) {
 	/*  Static vars */
 	// Dimensions
 	var WIDTH = 20;
@@ -365,10 +445,17 @@ var Player = (function() {
 	var MISSILE_RECHARGE_TIME = 1000; // in ms
 	var MISSILE_INITIAL_SPEED = 1.4; // Mltiplier for missile exit speed
 
-	function Player(game) {
-		_this = this;
-		_this.game = game;
-		_this.init();
+	function Player() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			this.method = method;
+		}
+
+		// Scale based on canvas size
+		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
+		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
+
+		this.init();
 	} 
 
 	Player.prototype = {
@@ -378,33 +465,33 @@ var Player = (function() {
 			/* START: movement fields */
 			/**************************/
 			// Location
-			_this.x = 0;
-			_this.y = 0;
+			this.x = 0;
+			this.y = 0;
 
 			// Dimensions
-			_this.width = WIDTH;
-			_this.height = HEIGHT;
+			this.width = WIDTH;
+			this.height = HEIGHT;
 
 			// Rotation
-			_this.rotation = 0.0;
+			this.rotation = 0.0;
 
 			// Velocity components (between 0 and -1)
-			_this.vx = 0;
-			_this.vy = 0;
+			this.vx = 0;
+			this.vy = 0;
 
 			// Location that ship is heading toward
-			_this.xHeading = null;
-			_this.yHeading = null;
+			this.xHeading = null;
+			this.yHeading = null;
 
 			// Speed
-			_this.speed = 0;
+			this.speed = 0;
 
 			// Last update (so updates can be FPS independent)
-			_this.lastUpdate = new Date().getTime();
+			this.lastUpdate = new Date().getTime();
 
 			// Max locations for ship
-			_this.maxX = -1;
-			_this.maxY = -1;
+			this.maxX =  window.spaceRocks.getDimensions().width;
+			this.maxY = window.spaceRocks.getDimensions().height;
 			/************************/
 			/* END: movement fields */
 			/************************/
@@ -412,11 +499,12 @@ var Player = (function() {
 			/**********************/
 			/* START: data fields */
 			/**********************/
-			_this.missileFired = null; // So that missiles can be fired in update loop
-			_this.activeMissiles = new Array();
-			_this.missileCount = 5;
-			_this.lastMissileFired = new Date().getTime();
-			_this.lastMissileRecharged = new Date().getTime();
+			this.missileFired = null; // So that missiles can be fired in update loop
+			this.activeMissiles = new Array();
+			this.missileCount = 5;
+			this.lastMissileFired = new Date().getTime();
+			this.lastMissileRecharged = new Date().getTime();
+			this.lifeCount = 3;
 
 			/********************/
 			/* END: data fields */
@@ -424,122 +512,115 @@ var Player = (function() {
 		},
 		/* Setter function so caching can be setup immediately */
 		setShape : function(shape) {
-			_this.shape = shape;
-			_this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
-			_this.shape.regX = WIDTH / 2;
-			_this.shape.regY = HEIGHT / 2;
-			_this.shape.scaleX = window.devicePixelRatio;
-			_this.shape.scaleY = window.devicePixelRatio;
-			_this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
-			_this.shape.snapToPixel = true;
-		},
-		setMaxExtents : function(maxX, maxY) {
-			_this.maxX = maxX;
-			_this.maxY = maxY;
-
-			// Increase speed for displays over 640 wide
-			ACCELERATION *= maxX / (320 * window.devicePixelRatio);
-			MAX_SPEED *= maxY / (320 * window.devicePixelRatio);
+			this.shape = shape;
+			this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
+			this.shape.regX = WIDTH / 2;
+			this.shape.regY = HEIGHT / 2;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
+			this.shape.snapToPixel = true;
 		},
 		setHeading : function(x, y) {
-			_this.xHeading = x;
-			_this.yHeading = y;
+			this.xHeading = x;
+			this.yHeading = y;
 		},
 		fireMissile : function(x, y) {
-			_this.missileFired = new createjs.Point(x, y); // Will actually be fired in next update loop
+			this.missileFired = new createjs.Point(x, y); // Will actually be fired in next update loop
 		},
 		render : function() {
-			_this.shape.x = _this.x;
-			_this.shape.y = _this.y;
-			_this.shape.rotation = _this.rotation;
+			this.shape.x = this.x;
+			this.shape.y = this.y;
+			this.shape.rotation = this.rotation;
 		},
 		update : function() {
-			var timeSinceUpdate = new Date().getTime() - _this.lastUpdate;
-			_this.lastUpdate = new Date().getTime();
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
 
 			// If target heading is not null adjust current heading and speed
-			if(_this.xHeading !== null && _this.yHeading !== null) {
+			if(this.xHeading !== null && this.yHeading !== null) {
 				// Calculate hvx and hvy from current location
-				var xDiff = _this.xHeading - _this.x;
-				var yDiff = _this.yHeading - _this.y;
+				var xDiff = this.xHeading - this.x;
+				var yDiff = this.yHeading - this.y;
 				var hvx = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  xDiff;
 				var hvy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
 
 				// Move heading towards target
-				if(_this.vx !== hvx) {
-					var direction = (_this.vx > hvx)? -1 : 1;
-					_this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
+				if(this.vx !== hvx) {
+					var direction = (this.vx > hvx)? -1 : 1;
+					this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
 				}
-				if(_this.vy !== hvy) {
-					var direction = (_this.vy > hvy)? -1 : 1;
-					_this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
+				if(this.vy !== hvy) {
+					var direction = (this.vy > hvy)? -1 : 1;
+					this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
 				}
 
 				// Set speed based on length of line (no need to be preceise with sqrt)
 				var distanceToHeading = (xDiff + yDiff) / 2;
-				_this.speed += (timeSinceUpdate * ACCELERATION) * Math.abs(distanceToHeading);
-				_this.speed = (_this.speed > MAX_SPEED)? 0 + MAX_SPEED : _this.speed;
+				this.speed += (timeSinceUpdate * ACCELERATION) * Math.abs(distanceToHeading);
+				this.speed = (this.speed > MAX_SPEED)? 0 + MAX_SPEED : this.speed;
 			}
 
 			// Update location
-			_this.x += (timeSinceUpdate * _this.speed) * _this.vx;
-			_this.y += (timeSinceUpdate * _this.speed) * _this.vy;
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in center of shape)
-			_this.x = ((_this.x - _this.width / 2) > _this.maxX)? (0 - _this.width / 2) : _this.x;
-			_this.x = ((_this.x + _this.width / 2) < 0)? (_this.maxX + _this.width / 2) : _this.x;
-			_this.y = ((_this.y - _this.height / 2) > _this.maxY)? (0 - _this.height / 2) : _this.y;
-			_this.y = ((_this.y + _this.height / 2) < 0)? (_this.maxY + _this.height / 2) : _this.y;
+			this.x = ((this.x - this.width / 2) > this.maxX)? (0 - this.width / 2) : this.x;
+			this.x = ((this.x + this.width / 2) < 0)? (this.maxX + this.width / 2) : this.x;
+			this.y = ((this.y - this.height / 2) > this.maxY)? (0 - this.height / 2) : this.y;
+			this.y = ((this.y + this.height / 2) < 0)? (this.maxY + this.height / 2) : this.y;
 
 			// Turn to face current heading
-			if(_this.vy !== 0 && _this.vx !== 0) {
-				_this.rotation = Math.atan2(_this.vy, _this.vx) * (180 / Math.PI) + 90;
+			if(this.vy !== 0 && this.vx !== 0) {
+				this.rotation = Math.atan2(this.vy, this.vx) * (180 / Math.PI) + 90;
 			}
 
 			// Recharge missiles
-			if(new Date().getTime() - _this.lastMissileFired > MISSILE_RECHARGE_TIME 
-				&& new Date().getTime() - _this.lastMissileRecharged > MISSILE_RECHARGE_TIME 
-				&& _this.missileCount < MAX_MISSILES) {
-				_this.lastMissileRecharged = new Date().getTime();
-				++_this.missileCount;
+			if(new Date().getTime() - this.lastMissileFired > MISSILE_RECHARGE_TIME 
+				&& new Date().getTime() - this.lastMissileRecharged > MISSILE_RECHARGE_TIME 
+				&& this.missileCount < MAX_MISSILES) {
+				this.lastMissileRecharged = new Date().getTime();
+				++this.missileCount;
 			}
 
 			// Update all missiles
-			if(_this.missileCount > 0 && _this.missileFired) {
+			if(this.missileCount > 0 && this.missileFired) {
 				// Adjust missile count for player
-				--_this.missileCount;
-				_this.lastMissileFired = new Date().getTime();
+				--this.missileCount;
+				this.lastMissileFired = new Date().getTime();
 
 				// Setup shape and missle
 				var shape = new createjs.Shape();
 				var missile = new Missile();
 				missile.setShape(shape);
-				missile.setHeading(_this.missileFired.x, _this.missileFired.y);
-				missile.vx = _this.vx;
-				missile.vy = _this.vy;
-				missile.x = _this.x + (_this.vx * (_this.width / 2));	// TODO: Poisiton missile at middle top of ship
-				missile.y = _this.y + (_this.vy * (_this.height / 2));	// TODO: Poisiton missile at middle top of ship
-				missile.speed = _this.speed * MISSILE_INITIAL_SPEED;
-				_this.activeMissiles.push(missile);
-				_this.game.stage.addChildAt(shape, 1); // Ensure that missile is rendered under ship
-				_this.missileFired = false;
+				missile.setHeading(this.missileFired.x, this.missileFired.y);
+				missile.vx = this.vx;
+				missile.vy = this.vy;
+				missile.x = this.x + (this.vx * (this.width / 2));	// TODO: Poisiton missile at middle top of ship
+				missile.y = this.y + (this.vy * (this.height / 2));	// TODO: Poisiton missile at middle top of ship
+				missile.speed = this.speed * MISSILE_INITIAL_SPEED;
+				this.activeMissiles.push(missile);
+				window.spaceRocks.stage.addChildAt(shape, 1); // Ensure that missile is rendered under ship
+				this.missileFired = false;
 			}
 
-			for(var i = 0; i < _this.activeMissiles.length; i++) {
-				if(_this.activeMissiles[i] == null) continue;
-				if(_this.activeMissiles[i].exploded) {
-					_this.game.stage.removeChild(_this.activeMissiles[i].shape);
-					delete _this.activeMissiles[i];
+			// Remove expired missiles
+			for(var i = 0; i < this.activeMissiles.length; i++) {
+				if(this.activeMissiles[i] == null) continue;
+				if(this.activeMissiles[i].exploded) {
+					window.spaceRocks.stage.removeChild(this.activeMissiles[i].shape);
+					//delete this.activeMissiles[i];
 				} else {
-					_this.activeMissiles[i].update();
-					_this.activeMissiles[i].render();
+					this.activeMissiles[i].update();
+					this.activeMissiles[i].render();
 				}
 			}
 		}
 	}
 
 	return Player;
-})();
+})(Entity);
 
 /*****************************/
 /** ------ Main game ------ **/
@@ -561,6 +642,11 @@ var SpaceRocks = (function() {
 		_this = this;
 		_this.init();
 		_this.attachObservers();
+
+		// Expose public functions
+		this.setupEntities = SpaceRocks.prototype.setupEntities;
+		this.startTicking = SpaceRocks.prototype.startTicking;
+		this.getDimensions = SpaceRocks.prototype.getDimensions;
 	}
 
 	SpaceRocks.prototype = {
@@ -569,16 +655,17 @@ var SpaceRocks = (function() {
 		/** ------ Setup functions ------ **/
 		/***********************************/
 		init : function() {
+
 			// FPS tracker
 			_this.meter = new Stats();
 			_this.meter.setMode(0);
 			_this.meter.domElement.style.position = 'absolute';
 			_this.meter.domElement.style.left = '0px';
 			_this.meter.domElement.style.top = '0px';
-			document.body.appendChild( _this.meter.domElement );
+			document.body.appendChild( _this.meter.domElement);
 
 			// Set dimensions
-			_this.canvas = document.getElementById("spaceRocks");
+			_this.canvas = document.getElementById("game");
 			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH;
 			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT;
 			_this.canvas.width = _this.width;
@@ -587,21 +674,20 @@ var SpaceRocks = (function() {
 			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
 
 			// Create stage and enable touch
-			_this.stage = new createjs.Stage("spaceRocks");
+			_this.stage = new createjs.Stage("game");
 			createjs.Touch.enable(_this.stage);
 			_this.stage.enableMouseOver(10);
 			_this.stage.snapToPixelEnabled = true;
 
 			// Setup initial entities
-			_this.setupEntities();
+			//_this.setupEntities();
 
 			// Setup score
 			_this.score = Math.floor(Math.random() * 100);
-
-			// Start ticking
+		},
+		startTicking : function() {
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
-			_this.tickCount = 0;
 		},
 		setupEntities : function() {
 			// Create navigation
@@ -623,7 +709,6 @@ var SpaceRocks = (function() {
 			_this.player.setShape(new createjs.Shape());
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
-			_this.player.setMaxExtents(_this.width, _this.height);
 			_this.stage.addChild(_this.player.shape);
 
 			// Create HUD
@@ -637,7 +722,6 @@ var SpaceRocks = (function() {
 				// Set random start location
 				asteroid.x = Math.random() * _this.width;
 				asteroid.y = Math.random() * _this.height;
-				asteroid.setMaxExtents(_this.width, _this.height);
 				asteroid.setShape(new createjs.Shape());
 
 				// Add to array and stage
@@ -734,14 +818,22 @@ var SpaceRocks = (function() {
 			var navigationCircle = _this.navigationContainer.getChildByName("navigationCircle");
 			var navigationLine = _this.navigationContainer.getChildByName("navigationLine");
 			navigationCircle.x = _this.lastTouchX;
-			navigationCircle.y = this.lastTouchY;
+			navigationCircle.y = _this.lastTouchY;
 
-			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(_this.player.x, _this.player.y, this.lastTouchX, this.lastTouchY, 4);
+			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
+		},
+
+		addEntity : function() {
+			// Adds object that conforms to entity interface
+		},
+
+		getDimensions : function() {
+			return { width: _this.width, height: _this.height};
 		},
 
 		tick : function() {
 			_this.meter.begin();
-			++_this.tickCount;
+			++this.tickCount;
 
 			// Update and render player
 			_this.player.update();
@@ -771,6 +863,7 @@ var SpaceRocks = (function() {
 })();
 
 window.onload = function() {
-	window.SpaceRocks = new SpaceRocks(); 
-	setTimeout(function() { window.scrollTo(0, 1) }, 100);
+	window.spaceRocks = new SpaceRocks(); 
+	window.spaceRocks.setupEntities();
+	window.spaceRocks.startTicking();
 }
