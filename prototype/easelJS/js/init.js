@@ -282,8 +282,8 @@ var HUD = (function() {
 /** ------ Player ------ **/
 /**************************/
 var MissileExplosion =  (function(Entity) {
-	var EXPLOSION_TIME = 2000; // Explosion length in ms
-	var EXPLOSION_RADIUS = 20; // Explosion radius in pixels
+	var EXPLOSION_TIME = 1500; // Explosion length in ms
+	var EXPLOSION_RADIUS = 30; // Explosion radius in pixels
 
 	function MissileExplosion() {
 		// Mixin entity base class
@@ -301,39 +301,47 @@ var MissileExplosion =  (function(Entity) {
 		this.lastUpdate = new Date().getTime();
 	}
 
-	function setShape(shape) {
-		this.shape = shape;
-		this.shape.scaleX = window.devicePixelRatio;
-		this.shape.scaleY = window.devicePixelRatio;
-		this.shape.regX = (this.size * window.devicePixelRatio);
-		this.shape.regY = (this.size * window.devicePixelRatio);
-		this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
-		this.shape.snapToPixel = true;
-	}
+	MissileExplosion.prototype = {
+		constructor : MissileExplosion,
+		setShape : function(shape) {
+			this.shape = shape;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.regX = (this.size * window.devicePixelRatio);
+			this.shape.regY = (this.size * window.devicePixelRatio);
+			this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
+			this.shape.snapToPixel = true;
+		},
+		render : function() {
+			console.log(this.radius);
 
-	function render() {
-		this.shape.graphics.clear().beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
-	}
+			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
+		},
+		update : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
 
-	function update() {
-		this.shape.x = this.x;
-		this.shape.y = this.y;
+			// Expand or contract size based on time since explosion
+			this.timeSinceExplosion = new Date().getTime() - this.explositionStart;
+			this.timeSinceLastUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
 
-		// Expand or contract size based on time since explosion
-		this.timeSinceExplosion = new Date().getTime() - this.explositionStart;
-		this.timeSinceLastUpdate = new Date().getTime() - this.lastUpdate;
-
-		// If it's passed halfway start contracting
-		var pixelsPerMS = EXPLOSION_RADIUS / EXPLOSION_TIME;
-		if(this.timeSinceExplosion > EXPLOSION_TIME / 2) {
-			this.radius -= pixelsPerMS * this.timeSinceLastUpdate;
-		} else {
-			this.radius += pixelsPerMS * this.timeSinceLastUpdate;
+			// If it's passed halfway start contracting
+			var pixelsPerMS = EXPLOSION_RADIUS / EXPLOSION_TIME;
+			console.log(pixelsPerMS);
+			if(this.timeSinceExplosion > EXPLOSION_TIME / 2) {
+				this.radius -= pixelsPerMS * this.timeSinceLastUpdate;
+			} else {
+				this.radius += pixelsPerMS * this.timeSinceLastUpdate;
+			}
+		},
+		isDead : function() {
+			return this.radius < 0;
 		}
 	}
 
 	return MissileExplosion;
-})(Entity)
+})(Entity);
 
 var Missile = (function(Entity) {
 	//var this;
@@ -393,6 +401,8 @@ var Missile = (function(Entity) {
 			this.shape.y = this.y;
 		},
 		update : function() {
+			console.log();
+
 			if(this.exploded) return;
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -422,6 +432,17 @@ var Missile = (function(Entity) {
 			// Update location
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			// If dead add an explosion
+			if(this.isDead()) {
+				// Setup shape and missle
+				var shape = new createjs.Shape();
+				var missileExplosion = new MissileExplosion();
+				missileExplosion.setShape(shape);
+				missileExplosion.x = this.x;
+				missileExplosion.y = this.y;
+				window.spaceRocks.addEntity(missileExplosion, 1);
+			}
 		},
 		isDead : function() {
 			return (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10);
