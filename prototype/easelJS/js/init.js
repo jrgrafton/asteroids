@@ -464,7 +464,12 @@ var Asteroid = (function(Entity) {
 			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
 
 			// Rotate asteroid
-			this.rotation += (timeSinceUpdate * this.rotationSpeed) % 360;
+			this.rotation += (timeSinceUpdate * this.rotationSpeed);
+			if(this.rotation > 0) {
+				this.rotation = 0 + (Math.abs(this.rotation) % 360);
+			} else {
+				this.rotation = 0 - (Math.abs(this.rotation) % 360);
+			}
 		}
 	}
 
