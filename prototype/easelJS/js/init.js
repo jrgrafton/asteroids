@@ -279,10 +279,13 @@ var CollisionHandler = (function() {
 					switch(entities[1].className()) {
 						case "Missile":
 							console.log("[collision] Asteroid --> Missile");
+							// Explode missile
 							entities[1].explode();
 						break;
 						case "MissileExplosion":
 							console.log("[collision] Asteroid --> MissileExplosion");
+							// Explode asteroid
+							entities[0].explode();
 							window.spaceRocks.score += 10;
 						break;
 						case "Player":
@@ -359,14 +362,20 @@ var Asteroid = (function(Entity) {
 		3 : 80
 	};
 	var ROTATION_SPEED = 0.0090; // in degrees per ms
+	var EXPLOSION_CHILDREN = 2; // Number of children that are created when asteroid explodes
 
-	function Asteroid() {
+	function Asteroid(sizeIndex) {
 		// Mixin entity base class
 		for(var method in Entity) {
 			if(this[method] == undefined) {
 				this[method] = Entity[method];
 			}
 		}
+		// Set sizeIndex
+		sizeIndex = (sizeIndex == null)? 3 : sizeIndex;
+		this.sizeIndex = sizeIndex;
+
+		// Initialise Asteroid
 		this.init();
 	}
 
@@ -401,6 +410,9 @@ var Asteroid = (function(Entity) {
 			if(Math.floor(Math.random() * 100) % 2 === 0) {
 				this.rotationSpeed = 0 - this.rotationSpeed;
 			}
+
+			// Dies when goes below lowest size
+			this.exploded = false;
 		},
 		getRandomInRange : function(min, max) {
 			return Math.random() * (max - min) + min;
@@ -466,6 +478,26 @@ var Asteroid = (function(Entity) {
 		getHitBoxType : function() {
 			return this.hitBoxTypes.CIRCLE;
 		},
+		explode : function() {
+			if(this.sizeIndex === 3){ 
+				this.exploded = true;
+			}
+
+			// Create two new asteroids if sizeIndex is greater than 0
+			if(this.sizeIndex > 0) {
+				for(var i = 0; i < EXPLOSION_CHILDREN; i++) {
+					var asteroid = new Asteroid(--this.sizeIndex);
+					
+					// Set start location
+					asteroid.x = this.x;
+					asteroid.y = this.y;
+					asteroid.setShape(new createjs.Shape());
+
+					// Add to entity list
+					//window.spaceRocks.addEntity(asteroid);
+				}
+			}
+		},
 		render : function() {
 			// @TODO render parts on opposite sceen when rendering goes offscreen
 			this.shape.x = this.x;
@@ -474,7 +506,7 @@ var Asteroid = (function(Entity) {
 
 			// Set bounds just below maximum extent
 			var radiusDiff = this.maxRadius - this.minRadius;
-			var diameter = (this.minRadius + (0.75 * radiusDiff)) * 2;
+			var diameter = (this.minRadius + (0.7 * radiusDiff)) * 2;
 			this.shape.setBounds(this.x, this.y, diameter, diameter);
 		},
 		update : function() {
@@ -497,6 +529,9 @@ var Asteroid = (function(Entity) {
 			} else {
 				this.rotation = 0 - (Math.abs(this.rotation) % 360);
 			}
+		},
+		isDead : function() {
+			return this.exploded;
 		}
 	}
 
@@ -887,7 +922,7 @@ var SpaceRocks = (function() {
 
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	
-	var INITIAL_ASTEROID_COUNT = 5;
+	var INITIAL_ASTEROID_COUNT = 1;
 
 	// Constructor
 	function SpaceRocks() {
