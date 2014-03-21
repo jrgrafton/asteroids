@@ -76,25 +76,239 @@ createjs.Graphics.prototype.dashedLineTo = function(x1, y1, x2, y2, dashLen) {
     this[q % 2 == 0 ? 'moveTo' : 'lineTo'](x2, y2); 
 }
 
+/**********************/
+/** ------ UI ------ **/
+/**********************/
+var HUD = (function() {
+	function HUD() {
+		// Set player and game objects
+		this.init();
+	}
+
+	HUD.prototype = {
+		constructor : HUD,
+		init : function() {
+			this.container = new createjs.Container();
+			this.container.x = this.container.y = 0;
+			this.container.width = window.spaceRocks.getDimensions().width;
+			this.container.height = window.spaceRocks.getDimensions().height / 10;
+
+			this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
+			this.score.x = 0;
+			this.score.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
+			this.score.textAlign = "left";
+
+			this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
+			this.missiles.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.missiles.x = window.spaceRocks.getDimensions().width - (this.missiles.getBounds().width * window.devicePixelRatio);
+			this.missiles.scaleX = this.missiles.scaleY = window.devicePixelRatio;
+			this.missiles.textAlign = "left";
+
+			this.lives = new createjs.Text("Lives: 3", "20px Arial", "#ffffff");
+			this.lives.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
+			this.lives.x = window.spaceRocks.getDimensions().width - (window.spaceRocks.getDimensions().width / 2) - ((this.lives.getBounds().width * window.devicePixelRatio) / 2);
+			this.lives.scaleX = this.lives.scaleY = window.devicePixelRatio;
+			this.lives.textAlign = "left";
+			
+			// Add text to stage
+			this.container.addChild(this.score);
+			this.container.addChild(this.missiles);
+			this.container.addChild(this.lives);
+			 window.spaceRocks.stage.addChild(this.container);
+		},
+		update : function() {
+			this.score.text = "Score: " + window.spaceRocks.score;
+			this.missiles.text = "Missiles: " + window.spaceRocks.player.missileCount;
+			this.lives.text = "Lives: " + window.spaceRocks.player.lifeCount;
+		}
+	}
+
+	return HUD;
+})();
+
+/***************************/
+/** ------ Physics ------ **/
+/***************************/
+var Physics = (function() {
+
+	function Physics() {}
+
+	Physics.prototype = {
+		constructor : Physics,
+		// x, y radius and centre
+		testPointCircle : function(x, y, radius, centre) {},
+		// x, y, points (polygon), rotation
+		testPointPolygon : function(x, y, points, rotation) {},
+		// Centre one, radius one, centre two, radius 2
+		testCircleCircle : function(c1, r1, c2, r2){},
+		// Origin, centre, radius
+		testRectangleCircle : function(origin, rotation, radius, centre) {},
+		// Origin one, rotation one, origin two, points (polygon), rotation two
+		testRectanglePolygon : function(o1, r1, o2, points, r2) {},
+
+		// Get polygon from points
+		getPolygonFromPoints : function(points, rotation) {
+			var targetPoints = new Array();
+			for(var i = 1; i < points.length; i++) {
+				targetPoints.push(new SAT.Vector(Math.round(points[i].x), Math.round(points[i].y)));
+			}
+
+			var polygon = new SAT.Polygon(new SAT.Vector(points[0].x, points[0].y), targetPoints);
+			polygon.angle = rotation;
+			polygon.recalc();
+
+			return polygon;
+		},
+
+		// Two entity collision
+		hasCollided : function(e1, e2){
+			var entities = new Array();
+			entities.push(e1, e2);
+			entities.sort(function(){ return e1.getHitBoxType() > e2.getHitBoxType() });
+
+			var e1d = entities[0].getDimensions();
+			var e2d = entities[1].getDimensions();
+
+			switch(entities[0].getHitBoxType()) {
+				case 0:
+					var sat1 = new SAT.Vector(e1d.x, e1d.y);
+					switch(entities[1].getHitBoxType()) {
+						case 1:
+							// Point in circle
+							var sat2 = new SAT.Circle(new Sat.Vector(e2d.x, e2d.y), e2d.width);
+							return SAT.pointInCircle(sat1, sat2).collided;
+						break;
+						case 2:
+							// Point in rectangle
+							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
+							sat2.angle = e2d.rotation;
+							sat2.recalc();
+							return SAT.pointInPolygon(sat1, sat2).collided;
+						break;
+						case 3:
+							// Point in poly
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							return SAT.pointInPolygon(sat1, sat2).collided;
+						break;
+						default:
+							return false;
+						break;
+					}
+				break;
+				case 1:
+					var sat1 = new SAT.Circle(new Sat.Vector(e1d.x, e1d.y), e1d.width);
+					switch(entities[1].getHitBoxType()) {
+						case 1:
+							// Circle in circle
+							var sat2 = new SAT.Circle(new Sat.Vector(e2d.x, e2d.y), e2d.width);
+							return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
+						break;
+						case 2:
+							// Circle in rectangle
+							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
+							sat2.angle = e2d.rotation;
+							sat2.recalc();
+							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+						break;
+						case 3:
+							// Circle in polygon
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+						break;
+						default:
+							return false;
+						break;
+					}
+				break;
+				case 2:
+					var sat1 = new SAT.Box(new SAT.Vector(e1d.x, e1d.y), e1d.width, e1d.height).toPolygon();
+					switch(entities[1].getHitBoxType()) {
+						case 2:
+							// Rectangle in rectangle
+							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
+							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+						break;
+						case 3:
+							// Rectangle in polygon
+							console.log("rectangle in poly");
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+						break;
+						default:
+							return false;
+						break;
+					}
+				break;
+				case 3:
+					var sat1 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+					switch(entities[1].getHitBoxType()) {
+						case 3:
+							// Polygon in polygon
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+						break;
+						default:
+							return false;
+						break;
+					}
+				break;
+				default:
+				return false;
+			}
+		}
+	}
+
+	return Physics;
+})();
+
 /************************************/
 /** ------ Entity Interface ------ **/
 /************************************/
 var Entity = (function() {
 
-	function Entity() {};
+	function Entity() {
+		
+	};
 
 	// Used to normalise all entity collisions and updates in game
 	return {
 		constructor : Entity,
+		/* GFX and state */
 		update : function(){},
 		render : function(){},
 		setShape : function(){},
-		collideWith : function(entity){},
-		isDead : function(){ return false; }
+		isDead : function(){ return false; },
+		/* Physics */
+		hitBoxTypes : {
+			POINT : 0,
+			CIRCLE : 1,
+			RECTANGLE : 2,
+			POLYGON : 3
+		},
+		getDimensions : function() { 
+			return { 
+				points : this.points || null,
+				rotation : this.rotation || 0,
+				bounds : this.shape.getBounds()
+			} 
+		},
+		getHitBox : function(){},
+		getHitBoxType : function(){},
+		canCollideWidth : function(entity){},
+		collidedWith : function(entity){},
+		className : function() { 
+		   var funcNameRegex = /function (.{1,})\(/;
+		   var results = (funcNameRegex).exec((this).constructor.toString());
+		   return (results && results.length > 1) ? results[1] : "";
+		}
+		
 	}
 })();
 
-
+/**************************************/
+/** ------ Entity definitions ------ **/
+/**************************************/
 var Asteroid = (function(Entity) {
 
 	// Static fields
@@ -164,6 +378,7 @@ var Asteroid = (function(Entity) {
 			var maxLineDistance = (2 * Math.PI) / 15;
 
 			// First point is at 0 rad
+			this.points = new Array();
 			var distanceFromCenter = this.getRandomInRange(minRadius, maxRadius);
 			var firstPoint = new createjs.Point(distanceFromCenter, 0);
 			var currentPoint = firstPoint;
@@ -172,6 +387,7 @@ var Asteroid = (function(Entity) {
 			var vy = 0;
 			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
 			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
+			this.points.push(firstPoint);
 			while(angle < ((2 * Math.PI) - maxLineDistance)) {
 				var lineLength = this.getRandomInRange(minLineDistance, maxLineDistance);
 				angle += this.getRandomInRange(minLineDistance, maxLineDistance);
@@ -179,6 +395,7 @@ var Asteroid = (function(Entity) {
 				vx = Math.cos(angle);
 				vy = Math.sin(angle);
 				nextPoint = new createjs.Point(vx * distanceFromCenter, vy * distanceFromCenter);
+				this.points.push(nextPoint);
 				shape.graphics.arcTo(currentPoint.x, currentPoint.y,  nextPoint.x,  nextPoint.y,  asteroidRadius / 6);
 				currentPoint = nextPoint;
 			}
@@ -201,13 +418,20 @@ var Asteroid = (function(Entity) {
 							(this.size * 2) + 8, 
 							window.devicePixelRatio);
 			this.shape.snapToPixel = true;
+			this.shape.setBounds(this.x, this.y, this.radius, this.radius);
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Missile", "MissileExplosion", "Player");
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		getHitBoxType : function() {
+			return this.hitBoxTypes.POLYGON
 		},
 		render : function() {
 			// @TODO render parts on opposite sceen when rendering goes offscreen
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
-			//console.log(this.rotation);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -230,57 +454,6 @@ var Asteroid = (function(Entity) {
 	return Asteroid;
 })(Entity);
 
-var HUD = (function() {
-	function HUD() {
-		// Set player and game objects
-		this.init();
-	}
-
-	HUD.prototype = {
-		constructor : HUD,
-		init : function() {
-			this.container = new createjs.Container();
-			this.container.x = this.container.y = 0;
-			this.container.width = window.spaceRocks.getDimensions().width;
-			this.container.height = window.spaceRocks.getDimensions().height / 10;
-
-			this.score = new createjs.Text("Score: 0", "20px Arial", "#ffffff");
-			this.score.x = 0;
-			this.score.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
-			this.score.scaleX = this.score.scaleY = window.devicePixelRatio;
-			this.score.textAlign = "left";
-
-			this.missiles = new createjs.Text("Missiles: 0", "20px Arial", "#ffffff");
-			this.missiles.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
-			this.missiles.x = window.spaceRocks.getDimensions().width - (this.missiles.getBounds().width * window.devicePixelRatio);
-			this.missiles.scaleX = this.missiles.scaleY = window.devicePixelRatio;
-			this.missiles.textAlign = "left";
-
-			this.lives = new createjs.Text("Lives: 3", "20px Arial", "#ffffff");
-			this.lives.y = window.spaceRocks.getDimensions().height - (this.score.getBounds().height * window.devicePixelRatio);
-			this.lives.x = window.spaceRocks.getDimensions().width - (window.spaceRocks.getDimensions().width / 2) - ((this.lives.getBounds().width * window.devicePixelRatio) / 2);
-			this.lives.scaleX = this.lives.scaleY = window.devicePixelRatio;
-			this.lives.textAlign = "left";
-			
-			// Add text to stage
-			this.container.addChild(this.score);
-			this.container.addChild(this.missiles);
-			this.container.addChild(this.lives);
-			 window.spaceRocks.stage.addChild(this.container);
-		},
-		update : function() {
-			this.score.text = "Score: " + window.spaceRocks.score;
-			this.missiles.text = "Missiles: " + window.spaceRocks.player.missileCount;
-			this.lives.text = "Lives: " + window.spaceRocks.player.lifeCount;
-		}
-	}
-
-	return HUD;
-})();
-
-/**************************/
-/** ------ Player ------ **/
-/**************************/
 var MissileExplosion =  (function(Entity) {
 	var EXPLOSION_TIME = 1500; // Explosion length in ms
 	var EXPLOSION_RADIUS = 30; // Explosion radius in pixels
@@ -312,15 +485,20 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
 			this.shape.snapToPixel = true;
 		},
-		render : function() {
-			console.log(this.radius);
-
-			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
+		getHitBoxType : function() {
+			return this.hitBoxTypes.CIRCLE
 		},
-		update : function() {
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Asteroid");
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
-
+			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
+			this.shape.setBounds(this.x, this.y, this.radius, this.radius);
+		},
+		update : function() {
 			// Expand or contract size based on time since explosion
 			this.timeSinceExplosion = new Date().getTime() - this.explositionStart;
 			this.timeSinceLastUpdate = new Date().getTime() - this.lastUpdate;
@@ -328,7 +506,6 @@ var MissileExplosion =  (function(Entity) {
 
 			// If it's passed halfway start contracting
 			var pixelsPerMS = EXPLOSION_RADIUS / EXPLOSION_TIME;
-			console.log(pixelsPerMS);
 			if(this.timeSinceExplosion > EXPLOSION_TIME / 2) {
 				this.radius -= pixelsPerMS * this.timeSinceLastUpdate;
 			} else {
@@ -391,18 +568,29 @@ var Missile = (function(Entity) {
 			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
 			this.shape.snapToPixel = true;
+			this.shape.setBounds(this.x, this.y, 1, 1);
 		},
 		setHeading : function(xHeading, yHeading) {
 			this.xHeading = xHeading;
 			this.yHeading = yHeading;
+		},
+		getHitBoxType : function() {
+			return this.hitBoxTypes.POINT
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Asteroid");
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		collidedWith : function(entity) {
+			if(entity.className() === "Asteroid") {
+				console.log("Missile collided with asteroid");
+			}
 		},
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 		},
 		update : function() {
-			console.log();
-
 			if(this.exploded) return;
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -435,17 +623,22 @@ var Missile = (function(Entity) {
 
 			// If dead add an explosion
 			if(this.isDead()) {
-				// Setup shape and missle
-				var shape = new createjs.Shape();
-				var missileExplosion = new MissileExplosion();
-				missileExplosion.setShape(shape);
-				missileExplosion.x = this.x;
-				missileExplosion.y = this.y;
-				window.spaceRocks.addEntity(missileExplosion, 1);
+				this.explode();
 			}
 		},
+		explode : function() {
+			// Setup shape and missle
+			var shape = new createjs.Shape();
+			var missileExplosion = new MissileExplosion();
+			missileExplosion.setShape(shape);
+			missileExplosion.x = this.x;
+			missileExplosion.y = this.y;
+			window.spaceRocks.addEntity(missileExplosion, 1);
+
+			this.exploded = true;
+		},
 		isDead : function() {
-			return (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10);
+			return this.exploded || (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10);
 		}
 	}
 
@@ -544,6 +737,7 @@ var Player = (function(Entity) {
 			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
 			this.shape.snapToPixel = true;
+			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 		},
 		setHeading : function(x, y) {
 			this.xHeading = x;
@@ -551,6 +745,13 @@ var Player = (function(Entity) {
 		},
 		fireMissile : function(x, y) {
 			this.missileFired = new createjs.Point(x, y); // Will actually be fired in next update loop
+		},
+		getHitBoxType : function() {
+			return this.hitBoxTypes.RECTANGLE
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Asteroid");
+			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		render : function() {
 			this.shape.x = this.x;
@@ -657,6 +858,9 @@ var SpaceRocks = (function() {
 
 		// Setup entity array
 		_this.entities = new Array();
+
+		// Setup physics engine
+		_this.physics = new Physics();
 
 		// Expose public functions
 		this.start = SpaceRocks.prototype.start;
@@ -854,18 +1058,36 @@ var SpaceRocks = (function() {
 			// Update HUD 
 			_this.hud.update();
 
-			// Update and render entities
+			// Update and render loop
 			for(var i = 0; i < _this.entities.length; i++) {
 				if(_this.entities[i] == null) continue;
 
 				_this.entities[i].update();
 				_this.entities[i].render();
 
-				// Check to see if entity is dead
+				// Remove entity from stage if its dead
 				if(_this.entities[i].isDead()) {
 					_this.stage.removeChild(_this.entities[i].shape);
 					delete _this.entities[i];
+					continue;
 				}
+
+				// Collision detection
+				/* for(var j = i + 1; j < _this.entities.length; j ++) {
+					if(_this.entities[j] == null) continue;
+
+					var e1 = _this.entities[i];
+					var e2 = _this.entities[j];
+					// Check if entities can collide
+					if(e1.canCollideWidth(e2)) {
+						if(_this.physics.hasCollided(e1, e2)) {
+							console.log("Collide!!");
+							// Tell entities that they've collided
+							//e1.collidedWith(e2);
+							//e2.collidedWith(e1);
+						}
+					}
+				} */
 			}
 
 			// Draw everything to stage
