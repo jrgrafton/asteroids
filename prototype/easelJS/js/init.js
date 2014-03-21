@@ -115,7 +115,7 @@ var HUD = (function() {
 			this.container.addChild(this.score);
 			this.container.addChild(this.missiles);
 			this.container.addChild(this.lives);
-			 window.spaceRocks.stage.addChild(this.container);
+			window.spaceRocks.stage.addChild(this.container);
 		},
 		update : function() {
 			this.score.text = "Score: " + window.spaceRocks.score;
@@ -148,13 +148,14 @@ var Physics = (function() {
 		testRectanglePolygon : function(o1, r1, o2, points, r2) {},
 
 		// Get polygon from points
-		getPolygonFromPoints : function(points, rotation) {
+		getPolygonFromPoints : function(points, rotation, x, y) {
 			var targetPoints = new Array();
-			for(var i = 1; i < points.length; i++) {
+			for(var i = 0; i < points.length; i++) {
 				targetPoints.push(new SAT.Vector(Math.round(points[i].x), Math.round(points[i].y)));
 			}
 
-			var polygon = new SAT.Polygon(new SAT.Vector(points[0].x, points[0].y), targetPoints);
+			// Points usually drawn from 0 rad to Math.PI * 4 rad. Reverse array for physics calculations
+			var polygon = new SAT.Polygon(new SAT.Vector(x, y), targetPoints.reverse());
 			polygon.angle = rotation;
 			polygon.recalc();
 
@@ -176,7 +177,7 @@ var Physics = (function() {
 					switch(entities[1].getHitBoxType()) {
 						case 1:
 							// Point in circle
-							var sat2 = new SAT.Circle(new Sat.Vector(e2d.x, e2d.y), e2d.width);
+							var sat2 = new SAT.Circle(new SAT.Vector(e2d.x, e2d.y), e2d.width);
 							return SAT.pointInCircle(sat1, sat2).collided;
 						break;
 						case 2:
@@ -197,11 +198,11 @@ var Physics = (function() {
 					}
 				break;
 				case 1:
-					var sat1 = new SAT.Circle(new Sat.Vector(e1d.x, e1d.y), e1d.width);
+					var sat1 = new SAT.Circle(new SAT.Vector(e1d.x, e1d.y), e1d.width);
 					switch(entities[1].getHitBoxType()) {
 						case 1:
 							// Circle in circle
-							var sat2 = new SAT.Circle(new Sat.Vector(e2d.x, e2d.y), e2d.width);
+							var sat2 = new SAT.Circle(new SAT.Vector(e2d.x, e2d.y), e2d.width);
 							return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
 						break;
 						case 2:
@@ -213,7 +214,7 @@ var Physics = (function() {
 						break;
 						case 3:
 							// Circle in polygon
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
 							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
 						break;
 						default:
@@ -231,9 +232,13 @@ var Physics = (function() {
 						break;
 						case 3:
 							// Rectangle in polygon
-							console.log("rectangle in poly");
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
-							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+							var response = new SAT.Response();
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
+							var result =  SAT.testPolygonPolygon(sat1, sat2, response);
+							//console.log(e2d);
+							console.log(response);
+							console.log(result);
+							return result;
 						break;
 						default:
 							return false;
@@ -245,7 +250,7 @@ var Physics = (function() {
 					switch(entities[1].getHitBoxType()) {
 						case 3:
 							// Polygon in polygon
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
+							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
 							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
 						break;
 						default:
@@ -288,9 +293,12 @@ var Entity = (function() {
 		},
 		getDimensions : function() { 
 			return { 
+				x : this.shape.getBounds().x,
+				y : this.shape.getBounds().y,
+				width : this.shape.getBounds().width,
+				height : this.shape.getBounds().height,
 				points : this.points || null,
-				rotation : this.rotation || 0,
-				bounds : this.shape.getBounds()
+				rotation : this.rotation || 0
 			} 
 		},
 		getHitBox : function(){},
@@ -319,7 +327,7 @@ var Asteroid = (function(Entity) {
 		2 : 40,
 		3 : 80
 	};
-	var ROTATION_SPEED = 0.090; // in degrees per ms
+	var ROTATION_SPEED = 0.0090; // in degrees per ms
 
 	function Asteroid() {
 		// Mixin entity base class
@@ -343,14 +351,14 @@ var Asteroid = (function(Entity) {
 			this.vy = 1 / (Math.abs(this.vx) + Math.abs(this.vy)) * this.vy;
 
 			// Speed
-			this.speed = SPEED * (Math.random() + 0.5);
+			this.speed = 0;//SPEED * (Math.random() + 0.5);
 
 			// FPS independent movement
 			this.lastUpdate = new Date().getTime();
 
 			// Current size index
 			this.sizeIndex = 3
-			this.size = SIZES[this.sizeIndex];
+			this.radius = SIZES[this.sizeIndex];
 
 			// Max extents
 			this.maxX = window.spaceRocks.getDimensions().width;
@@ -358,7 +366,7 @@ var Asteroid = (function(Entity) {
 
 			// Rotation speed and angle (in degress per ms)
 			this.rotation = 0;
-			this.rotationSpeed = ROTATION_SPEED * (Math.random() + 0.5);
+			this.rotationSpeed = 0;//ROTATION_SPEED * (Math.random() + 0.5);
 			if(Math.floor(Math.random() * 100) % 2 === 0) {
 				this.rotationSpeed = 0 - this.rotationSpeed;
 			}
@@ -367,7 +375,7 @@ var Asteroid = (function(Entity) {
 			return Math.random() * (max - min) + min;
 		},
 		drawOutline : function(shape) {
-			var asteroidRadius = this.size;
+			var asteroidRadius = this.radius;
 
 			// Furthest indentation can be from outer edge of circle
 			var minRadius = asteroidRadius * 0.6;
@@ -412,13 +420,13 @@ var Asteroid = (function(Entity) {
 			//this.shape.regX = (this.size * window.devicePixelRatio);
 			//this.shape.regY = (this.size * window.devicePixelRatio);
 			this.drawOutline(this.shape);
-			this.shape.cache(-(this.size + 4), 
-							-(this.size + 4), 
-							(this.size * 2) + 8, 
-							(this.size * 2) + 8, 
+			this.shape.cache(-(this.radius + 4), 
+							-(this.radius + 4), 
+							(this.radius * 2) + 8, 
+							(this.radius * 2) + 8, 
 							window.devicePixelRatio);
 			this.shape.snapToPixel = true;
-			this.shape.setBounds(this.x, this.y, this.radius, this.radius);
+			this.shape.setBounds(this.x, this.y, this.radius * 2, this.radius * 2);
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Missile", "MissileExplosion", "Player");
@@ -432,6 +440,7 @@ var Asteroid = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
+			this.shape.setBounds(this.x, this.y, this.radius * 2, this.radius * 2);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -441,13 +450,13 @@ var Asteroid = (function(Entity) {
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in top left of shape)
-			this.x = (this.x - (this.size * window.devicePixelRatio) > this.maxX)? (0 - this.size * window.devicePixelRatio) : this.x;
-			this.x = (this.x + (this.size * window.devicePixelRatio) < 0)? (this.maxX + this.size * window.devicePixelRatio) : this.x;
-			this.y = (this.y - (this.size * window.devicePixelRatio) > this.maxY)? (0 - this.size * window.devicePixelRatio) : this.y;
-			this.y = (this.y + (this.size * window.devicePixelRatio) < 0)? (this.maxY + this.size * window.devicePixelRatio) : this.y;
+			this.x = (this.x - (this.radius * window.devicePixelRatio) > this.maxX)? (0 - this.radius * window.devicePixelRatio) : this.x;
+			this.x = (this.x + (this.radius * window.devicePixelRatio) < 0)? (this.maxX + this.radius * window.devicePixelRatio) : this.x;
+			this.y = (this.y - (this.radius * window.devicePixelRatio) > this.maxY)? (0 - this.radius * window.devicePixelRatio) : this.y;
+			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
 
 			// Rotate asteroid
-			this.rotation += this.rotationSpeed;
+			this.rotation += (timeSinceUpdate * this.rotationSpeed);
 		}
 	}
 
@@ -480,8 +489,8 @@ var MissileExplosion =  (function(Entity) {
 			this.shape = shape;
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.regX = (this.size * window.devicePixelRatio);
-			this.shape.regY = (this.size * window.devicePixelRatio);
+			this.shape.regX = (this.radius * window.devicePixelRatio);
+			this.shape.regY = (this.radius * window.devicePixelRatio);
 			this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, this.radius, this.radius);
 			this.shape.snapToPixel = true;
 		},
@@ -496,7 +505,7 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
-			this.shape.setBounds(this.x, this.y, this.radius, this.radius);
+			this.shape.setBounds(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
@@ -589,6 +598,7 @@ var Missile = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
+			this.shape.setBounds(this.x, this.y, 1, 1);
 		},
 		update : function() {
 			if(this.exploded) return;
@@ -737,7 +747,6 @@ var Player = (function(Entity) {
 			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
 			this.shape.snapToPixel = true;
-			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 		},
 		setHeading : function(x, y) {
 			this.xHeading = x;
@@ -757,6 +766,7 @@ var Player = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
+			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -844,11 +854,11 @@ var SpaceRocks = (function() {
 	// Global static vars
 	var MAX_WIDTH = 768;
 	var MAX_HEIGHT = 1024;
-	var TARGET_FPS = 60;
+	var TARGET_FPS = 1;
 
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	
-	var INITIAL_ASTEROID_COUNT = 5;
+	var INITIAL_ASTEROID_COUNT = 1;
 
 	// Constructor
 	function SpaceRocks() {
@@ -935,8 +945,8 @@ var SpaceRocks = (function() {
 				var asteroid = new Asteroid();
 				
 				// Set random start location
-				asteroid.x = Math.random() * _this.width;
-				asteroid.y = Math.random() * _this.height;
+				asteroid.x = 300; //Math.random() * _this.width;
+				asteroid.y = 500; //Math.random() * _this.height;
 				asteroid.setShape(new createjs.Shape());
 
 				// Add to entity list
@@ -1073,7 +1083,7 @@ var SpaceRocks = (function() {
 				}
 
 				// Collision detection
-				/* for(var j = i + 1; j < _this.entities.length; j ++) {
+				for(var j = i + 1; j < _this.entities.length; j ++) {
 					if(_this.entities[j] == null) continue;
 
 					var e1 = _this.entities[i];
@@ -1081,13 +1091,12 @@ var SpaceRocks = (function() {
 					// Check if entities can collide
 					if(e1.canCollideWidth(e2)) {
 						if(_this.physics.hasCollided(e1, e2)) {
-							console.log("Collide!!");
 							// Tell entities that they've collided
 							//e1.collidedWith(e2);
 							//e2.collidedWith(e1);
 						}
 					}
-				} */
+				}
 			}
 
 			// Draw everything to stage
