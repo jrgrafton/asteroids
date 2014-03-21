@@ -358,7 +358,7 @@ var Asteroid = (function(Entity) {
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
-		2 : 40,
+		2 : 60,
 		3 : 80
 	};
 	var ROTATION_SPEED = 0.0090; // in degrees per ms
@@ -397,7 +397,6 @@ var Asteroid = (function(Entity) {
 			this.lastUpdate = new Date().getTime();
 
 			// Current size index
-			this.sizeIndex = 3
 			this.radius = SIZES[this.sizeIndex];
 
 			// Max extents
@@ -479,24 +478,23 @@ var Asteroid = (function(Entity) {
 			return this.hitBoxTypes.CIRCLE;
 		},
 		explode : function() {
-			if(this.sizeIndex === 3){ 
-				this.exploded = true;
-			}
-
 			// Create two new asteroids if sizeIndex is greater than 0
 			if(this.sizeIndex > 0) {
 				for(var i = 0; i < EXPLOSION_CHILDREN; i++) {
-					var asteroid = new Asteroid(--this.sizeIndex);
+					var asteroid = new Asteroid((this.sizeIndex - 1));
 					
 					// Set start location
 					asteroid.x = this.x;
 					asteroid.y = this.y;
+					asteroid.speed = this.speed * 2;
 					asteroid.setShape(new createjs.Shape());
 
 					// Add to entity list
-					//window.spaceRocks.addEntity(asteroid);
+					window.spaceRocks.addEntity(asteroid);
 				}
 			}
+
+			this.exploded = true;
 		},
 		render : function() {
 			// @TODO render parts on opposite sceen when rendering goes offscreen
