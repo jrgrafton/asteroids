@@ -171,6 +171,14 @@ var Physics = (function() {
 			var e1d = entities[0].getDimensions();
 			var e2d = entities[1].getDimensions();
 
+			// Convert rotation in degrees to radians
+				// 360 degrees in circle
+				// 6 * Math.PI radians in a circle (18.84955592153876)
+					// 18.84955592153876 / 360 * degrees
+			console.log(e2d.rotation);
+			e2d.rotation = ((6 * Math.PI) / 360) * (e2d.rotation % 360);
+			console.log(e2d.rotation);
+
 			switch(entities[0].getHitBoxType()) {
 				case 0:
 					var sat1 = new SAT.Vector(e1d.x, e1d.y);
@@ -236,7 +244,7 @@ var Physics = (function() {
 							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
 							var result =  SAT.testPolygonPolygon(sat1, sat2, response);
 							//console.log(e2d);
-							console.log(response);
+							//console.log(response);
 							console.log(result);
 							return result;
 						break;
@@ -366,7 +374,7 @@ var Asteroid = (function(Entity) {
 
 			// Rotation speed and angle (in degress per ms)
 			this.rotation = 0;
-			this.rotationSpeed = 0;//ROTATION_SPEED * (Math.random() + 0.5);
+			this.rotationSpeed = ROTATION_SPEED * (Math.random() + 0.5);
 			if(Math.floor(Math.random() * 100) % 2 === 0) {
 				this.rotationSpeed = 0 - this.rotationSpeed;
 			}
@@ -456,7 +464,7 @@ var Asteroid = (function(Entity) {
 			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
 
 			// Rotate asteroid
-			this.rotation += (timeSinceUpdate * this.rotationSpeed);
+			this.rotation += (timeSinceUpdate * this.rotationSpeed) % 360;
 		}
 	}
 
