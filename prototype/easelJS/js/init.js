@@ -176,7 +176,7 @@ var Physics = (function() {
 				// 6 * Math.PI radians in a circle (18.84955592153876)
 					// 18.84955592153876 / 360 * degrees
 			console.log(e2d.rotation);
-			e2d.rotation = ((6 * Math.PI) / 360) * (e2d.rotation % 360);
+			e2d.rotation = (6 * Math.PI) - ((6 * Math.PI) / 360) * e2d.rotation;
 			console.log(e2d.rotation);
 
 			switch(entities[0].getHitBoxType()) {
