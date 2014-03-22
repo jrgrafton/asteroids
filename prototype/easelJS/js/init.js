@@ -1,18 +1,7 @@
 /*
 	TODO:
-
-	2. Explosions
-		a. Exlode time
-		b. Explode radius
-	4. Collisions
-		a. Refactor to genericise detection
-			i. Collidable interface
-			ii. Visitor pattern?
-			iii. Destructable
-			iv. Points?
-		b. Meteor --> player
-		c. Missile --> Meteor
-			a. Setup explosiion radius at detination point
+		a. Retina collisions
+	
 
 	5. Add alien
 		a. Consider conditions for adding
@@ -21,23 +10,23 @@
 	6. Additional collisions
 		a. Alien bullet --> player
 		b. Missile --> alien
-		c. Player --> alient
+		c. Player --> alien
 	7. Add conditions
-		a. Loose a life
-			i. Invulnerable
-		b. Loose all lifes
-			iii. Show end screen
 		c. Destroy all meteors
 	8. Screen state management
 		a. Start screen
 		b. Game screen
 		c. End screen
+	
 	9. GFX
-		a. Start screen
+		a. Go back to design phase
+			i. iPad / iPhone scaling
+			ii. End screen
+		b. Start screen
 			i. Buttons
 			ii. Stars
 			iii. Animations (TWEEN)
-		b. In game
+		c. In game
 			i. Bitmaps
 				i. Spaceship
 			ii. Effects

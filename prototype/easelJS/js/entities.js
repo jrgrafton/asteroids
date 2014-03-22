@@ -57,7 +57,7 @@ var Asteroid = (function(Entity) {
 		1 : 20,
 		2 : 40,
 		3 : 60,
-		4 : 80
+		4 : 80 * window.devicePixelRatio
 	};
 	var ROTATION_SPEED = 0.014; // in degrees per ms
 	var EXPLOSION_CHILDREN = 2; // Number of children that are created when asteroid explodes
@@ -155,8 +155,8 @@ var Asteroid = (function(Entity) {
 		},
 		setShape : function(shape) {
 			this.shape = shape;
-			this.shape.scaleX = window.devicePixelRatio;
-			this.shape.scaleY = window.devicePixelRatio;
+			//this.shape.scaleX = window.devicePixelRatio;
+			//this.shape.scaleY = window.devicePixelRatio;
 			this.drawOutline(this.shape);
 			this.shape.cache(-(this.radius + 4), 
 							-(this.radius + 4), 
