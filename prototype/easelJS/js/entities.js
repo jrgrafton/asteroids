@@ -550,7 +550,7 @@ var Player = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
-			this.shape.setBounds(this.x - ((WIDTH * this.shape.scaleX) / 2), this.y - ((HEIGHT * this.shape.scaleY / 2), WIDTH * this.shape.scaleX, HEIGHT * this.shape.scaleY);
+			this.shape.setBounds(this.x - ((WIDTH * this.shape.scaleX) / 2), this.y - ((HEIGHT * this.shape.scaleY) / 2), WIDTH * this.shape.scaleX, HEIGHT * this.shape.scaleY);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
