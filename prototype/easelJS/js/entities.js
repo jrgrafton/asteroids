@@ -203,7 +203,7 @@ var Asteroid = (function(Entity) {
 			// Set bounds just below maximum extent
 			var radiusDiff = this.maxRadius - this.minRadius;
 			var diameter = (this.minRadius + (0.7 * radiusDiff)) * 2;
-			this.shape.setBounds(this.x, this.y, diameter * window.devicePixelRatio, diameter * window.devicePixelRatio);
+			this.shape.setBounds(this.x, this.y, diameter, diameter);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
