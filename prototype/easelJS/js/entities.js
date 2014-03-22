@@ -203,7 +203,7 @@ var Asteroid = (function(Entity) {
 			// Set bounds just below maximum extent
 			var radiusDiff = this.maxRadius - this.minRadius;
 			var diameter = (this.minRadius + (0.7 * radiusDiff)) * 2;
-			this.shape.setBounds(this.x, this.y, diameter, diameter);
+			this.shape.setBounds(this.x, this.y, diameter * window.devicePixelRatio, diameter * window.devicePixelRatio);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -274,7 +274,7 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
-			this.shape.setBounds(this.x, this.y, this.radius * 2, this.radius * 2);
+			this.shape.setBounds(this.x, this.y, this.radius * 2 * window.devicePixelRatio, this.radius * 2 * window.devicePixelRatio);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
@@ -548,7 +548,7 @@ var Player = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
-			this.shape.setBounds(this.x - WIDTH / 2, this.y - HEIGHT / 2, WIDTH, HEIGHT);
+			this.shape.setBounds(this.x - WIDTH / 2, this.y - HEIGHT / 2, WIDTH * window.devicePixelRatio, HEIGHT * window.devicePixelRatio);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
