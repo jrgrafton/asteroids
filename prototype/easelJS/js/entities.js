@@ -53,13 +53,12 @@ var Asteroid = (function(Entity) {
 	// Static fields
 	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
-		0 : 10 * window.devicePixelRatio,
-		1 : 20 * window.devicePixelRatio,
-		2 : 40 * window.devicePixelRatio,
-		3 : 60 * window.devicePixelRatio,
-		4 : 80 * window.devicePixelRatio
+		0 : 10,
+		1 : 20,
+		2 : 40,
+		3 : 60,
+		4 : 80
 	};
-	var STROKE_WIDTH = 4 * window.devicePixelRatio;
 	var ROTATION_SPEED = 0.014; // in degrees per ms
 	var EXPLOSION_CHILDREN = 2; // Number of children that are created when asteroid explodes
 
@@ -134,7 +133,7 @@ var Asteroid = (function(Entity) {
 			var angle = 0.0;
 			var vx = 1;
 			var vy = 0;
-			shape.graphics.setStrokeStyle(STROKE_WIDTH).beginStroke("#ffffff");
+			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
 			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
 			this.points.push(firstPoint);
 			while(angle < ((2 * Math.PI) - maxLineDistance)) {
@@ -156,8 +155,8 @@ var Asteroid = (function(Entity) {
 		},
 		setShape : function(shape) {
 			this.shape = shape;
-			//this.shape.scaleX = window.devicePixelRatio;
-			//this.shape.scaleY = window.devicePixelRatio;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
 			this.drawOutline(this.shape);
 			this.shape.cache(-(this.radius + 4), 
 							-(this.radius + 4), 
@@ -237,7 +236,7 @@ var Asteroid = (function(Entity) {
 
 var MissileExplosion =  (function(Entity) {
 	var EXPLOSION_TIME = 1500; // Explosion length in ms
-	var EXPLOSION_RADIUS = 30 * window.devicePixelRatio; // Explosion radius in pixels
+	var EXPLOSION_RADIUS = 30; // Explosion radius in pixels
 
 	function MissileExplosion() {
 		// Mixin entity base class
@@ -259,6 +258,8 @@ var MissileExplosion =  (function(Entity) {
 		constructor : MissileExplosion,
 		setShape : function(shape) {
 			this.shape = shape;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.snapToPixel = true;
 			this.render();
 		},
@@ -273,7 +274,7 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
-			this.shape.setBounds(this.x, this.y, this.radius * 2, this.radius * 2);
+			this.shape.setBounds(this.x, this.y, this.radius * 2 * window.devicePixelRatio, this.radius * 2 * window.devicePixelRatio);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
@@ -306,7 +307,7 @@ var Missile = (function(Entity) {
 	var TURN_SPEED = 0.0006; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
-	var SIZE = 3 * window.devicePixelRatio;
+	var SIZE = 3;
 
 	function Missile() {
 		// Mixin entity base class
@@ -338,6 +339,8 @@ var Missile = (function(Entity) {
 			this.shape.graphics.beginFill("#00ff00").drawCircle(0, 0, SIZE, SIZE);
 			this.shape.regX = SIZE / 2;
 			this.shape.regY = SIZE / 2;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 			this.shape.setBounds(this.x, this.y, 1, 1);
@@ -416,8 +419,8 @@ var Missile = (function(Entity) {
 var Player = (function(Entity) {
 	/*  Static vars */
 	// Dimensions
-	var WIDTH = 20 * window.devicePixelRatio;
-	var HEIGHT = 30 * window.devicePixelRatio;
+	var WIDTH = 20;
+	var HEIGHT = 30;
 
 	// Speed fields
 	var ACCELERATION = (0.00000150 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
@@ -504,7 +507,9 @@ var Player = (function(Entity) {
 			this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 			this.shape.regX = WIDTH / 2;
 			this.shape.regY = HEIGHT / 2;
-			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2, window.devicePixelRatio);
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
 			this.shape.snapToPixel = true;
 		},
 		setHeading : function(x, y) {
@@ -543,7 +548,7 @@ var Player = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
-			this.shape.setBounds(this.x - WIDTH / 2, this.y - HEIGHT / 2, WIDTH, HEIGHT);
+			this.shape.setBounds(this.x - WIDTH / 2, this.y - HEIGHT / 2, WIDTH * window.devicePixelRatio, HEIGHT * window.devicePixelRatio);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
