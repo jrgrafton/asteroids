@@ -203,7 +203,7 @@ var Asteroid = (function(Entity) {
 			// Set bounds just below maximum extent
 			var radiusDiff = this.maxRadius - this.minRadius;
 			var diameter = (this.minRadius + (0.7 * radiusDiff)) * 2;
-			this.shape.setBounds(this.x, this.y, diameter, diameter);
+			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -274,7 +274,9 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
-			this.shape.setBounds(this.x, this.y, this.radius * 2 * window.devicePixelRatio, this.radius * 2 * window.devicePixelRatio);
+
+			var diameter = this.radius * 2;
+			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
@@ -359,7 +361,7 @@ var Missile = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
-			this.shape.setBounds(this.x, this.y, 1, 1);
+			this.shape.setBounds(this.x, this.y, SIZE * this.shape.regX, SIZE * this.shape.regY);
 		},
 		update : function() {
 			if(this.exploded) return;
@@ -505,11 +507,11 @@ var Player = (function(Entity) {
 		setShape : function(shape) {
 			this.shape = shape;
 			this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
-			this.shape.regX = WIDTH / 2;
-			this.shape.regY = HEIGHT / 2;
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2);
+			this.shape.regX = (WIDTH * this.shape.scaleX) / 2;
+			this.shape.regY = (HEIGHT * this.shape.scaleY) / 2;
+			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2, window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 		},
 		setHeading : function(x, y) {
@@ -548,7 +550,7 @@ var Player = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
-			this.shape.setBounds(this.x - WIDTH / 2, this.y - HEIGHT / 2, WIDTH * window.devicePixelRatio, HEIGHT * window.devicePixelRatio);
+			this.shape.setBounds(this.x - ((WIDTH * this.shape.scaleX) / 2), this.y - ((HEIGHT * this.shape.scaleY / 2), WIDTH * this.shape.scaleX, HEIGHT * this.shape.scaleY);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
