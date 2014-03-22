@@ -509,8 +509,8 @@ var Player = (function(Entity) {
 			this.shape.graphics.beginFill("#ff0000").drawRect(0, 0, WIDTH, HEIGHT);
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.regX = (WIDTH * this.shape.scaleX) / 2;
-			this.shape.regY = (HEIGHT * this.shape.scaleY) / 2;
+			this.shape.regX = WIDTH / 2;
+			this.shape.regY = HEIGHT / 2;
 			this.shape.cache(-WIDTH, -HEIGHT, WIDTH * 2, HEIGHT * 2, window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 		},
