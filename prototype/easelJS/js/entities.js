@@ -22,12 +22,6 @@ var Entity = (function() {
 		isDead : function(){ return false; },
 
 		/* Physics */
-		hitBoxTypes : {
-			POINT : 0,
-			CIRCLE : 1,
-			RECTANGLE : 2,
-			POLYGON : 3
-		},
 		getDimensions : function() { 
 			return { 
 				x : this.shape.getBounds().x,
@@ -173,7 +167,7 @@ var Asteroid = (function(Entity) {
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		getHitBoxType : function() {
-			return this.hitBoxTypes.CIRCLE;
+			return Physics.hitBoxTypes.CIRCLE;
 		},
 		explode : function() {
 			// Create two new asteroids if sizeIndex is greater than 0
@@ -264,7 +258,7 @@ var MissileExplosion =  (function(Entity) {
 			this.render();
 		},
 		getHitBoxType : function() {
-			return this.hitBoxTypes.CIRCLE
+			return Physics.hitBoxTypes.CIRCLE
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Asteroid");
@@ -352,7 +346,7 @@ var Missile = (function(Entity) {
 			this.yHeading = yHeading;
 		},
 		getHitBoxType : function() {
-			return this.hitBoxTypes.POINT
+			return Physics.hitBoxTypes.POINT
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Asteroid");
@@ -522,7 +516,7 @@ var Player = (function(Entity) {
 			this.missileFired = new createjs.Point(x, y); // Will actually be fired in next update loop
 		},
 		getHitBoxType : function() {
-			return this.hitBoxTypes.RECTANGLE
+			return Physics.hitBoxTypes.RECTANGLE
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Asteroid");

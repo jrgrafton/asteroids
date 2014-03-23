@@ -5,7 +5,15 @@
 // to improve Player vs Asteroid hit accuracy
 window.Physics = (function() {
 
-	function Physics() {}
+	function Physics() {
+		// Expose hitBoxTypes ENUM
+		Physics.hitBoxTypes = {
+			POINT : 0,
+			CIRCLE : 1,
+			RECTANGLE : 2,
+			POLYGON : 3
+		};
+	}
 
 	Physics.prototype = {
 		constructor : Physics,
@@ -33,7 +41,7 @@ window.Physics = (function() {
 		hasCollided : function(e1, e2){
 			var entities = new Array();
 			entities.push(e1, e2);
-			entities.sort(function(){ return e1.getHitBoxType() > e2.getHitBoxType() });
+			entities.sort(function(a, b){ return a.getHitBoxType() - b.getHitBoxType() });
 
 			var e1d = entities[0].getDimensions();
 			var e2d = entities[1].getDimensions();
@@ -143,7 +151,12 @@ var CollisionHandler = (function() {
 			// Ensure entities are in name order
 			var entities = new Array();
 			entities.push(e1, e2);
-			entities.sort(function(i, j){ return i.className() > j.className() });
+
+			entities.sort(function(a, b){
+			    if(a.className() < b.className()) return -1;
+			    if(a.className() > b.className()) return 1;
+			    return 0;
+			})
 
 			switch(entities[0].className()) {
 				case "Asteroid":
