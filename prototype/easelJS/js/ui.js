@@ -40,7 +40,7 @@ var HUD = (function() {
 			window.spaceRocks.stage.addChild(this.container);
 		},
 		update : function() {
-			this.score.text = "Score: " + window.spaceRocks.score;
+			this.score.text = "Score: " + window.spaceRocks.score + "(*" + window.spaceRocks.level + ")";
 			this.missiles.text = "Missiles: " + window.spaceRocks.player.missileCount;
 			this.lives.text = "Lives: " + window.spaceRocks.player.lifeCount;
 		}

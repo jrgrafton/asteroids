@@ -4,8 +4,11 @@
 // @TODO - swap phsyics library for one that can do concave polygons
 // to improve Player vs Asteroid hit accuracy
 window.Physics = (function() {
+	_this = null;
 
 	function Physics() {
+		_this = this;
+
 		// Expose hitBoxTypes ENUM
 		Physics.hitBoxTypes = {
 			POINT : 0,
@@ -13,10 +16,24 @@ window.Physics = (function() {
 			RECTANGLE : 2,
 			POLYGON : 3
 		};
+
+		// Collision handler determines what to do when entities collide
+		_this.collisionHandler = new CollisionHandler();
 	}
 
 	Physics.prototype = {
 		constructor : Physics,
+		collide : function(e1, e2) {
+			if(e1 == null || e2 == null) return false;
+
+			if(e1.canCollideWidth(e2)) {
+				if(_this.hasCollided(e1, e2)) {
+					// Tell collision handler that entities collided
+					_this.collisionHandler.didCollide(e1, e2);
+					_this.collisionHandler.didCollide(e2, e1);
+				}
+			}
+		},
 		// Get polygon from points
 		getPolygonFromPoints : function(points, rotation, x, y) {
 			var targetPoints = new Array();
@@ -60,7 +77,7 @@ window.Physics = (function() {
 						case 2:
 							// Point in rectangle
 							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
-							sat2.angle = e2d.rotation;
+							//sat2.angle = e2d.rotation;
 							sat2.recalc();
 							return SAT.pointInPolygon(sat1, sat2);
 						break;
@@ -148,40 +165,75 @@ var CollisionHandler = (function() {
 	CollisionHandler.prototype = {
 		constructor : CollisionHandler,
 		didCollide : function(e1, e2) {
-			// Ensure entities are in name order
-			var entities = new Array();
-			entities.push(e1, e2);
+			console.log("[collision] " + e1.className() + " --> " + e2.className());
 
-			entities.sort(function(a, b){
-			    if(a.className() < b.className()) return -1;
-			    if(a.className() > b.className()) return 1;
-			    return 0;
-			})
-
-			switch(entities[0].className()) {
+			switch(e1.className()) {
 				case "Asteroid":
-					switch(entities[1].className()) {
+					switch(e2.className()) {
 						case "Missile":
-							console.log("[collision] Asteroid --> Missile");
 							// Explode missile
-							entities[1].explode();
+							e2.explode();
 						break;
 						case "MissileExplosion":
-							console.log("[collision] Asteroid --> MissileExplosion");
 							// Explode asteroid
-							entities[0].explode();
+							e1.explode();
 							window.spaceRocks.score += 10;
 						break;
 						case "Player":
-							console.log("[collision] Asteroid --> Player");
-							entities[1].explode();
+							e2.explode();
 						break;
 						default:
 						break;
 					}
 				break;
+				case "Player":
+					switch(e2.className()) {
+						case "Alien" :
+							// Explode player
+							e1.explode();
+						break;
+						case "Lazer" :
+							// Explode player
+							e1.explode();
+						break;
+						default:
+						break;
+					}
 				default:
 				break;
+				case "Alien" : {
+					switch(e2.className()) {
+						case "Missile" :
+							// Explode alien and missile
+							e1.explode();
+							e2.explode();
+							window.spaceRocks.score += 100;
+						break;
+						case "MissileExplosion" :
+							// Explode alien
+							e1.explode();
+							window.spaceRocks.score += 100;
+						break;
+						default:
+						break;
+					}
+				}
+				case "Lazer" : {
+					switch(e2.className()) {
+						case "Missile" :
+							// Explode lazer and missile
+							e1.explode();
+							e2.explode();
+						break;
+						case "MissileExplosion" :
+							// Explode alien
+							e1.explode();
+							e2.explode();
+						break;
+						default:
+						break;
+					}
+				}
 			}
 		}
 	}

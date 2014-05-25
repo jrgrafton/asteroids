@@ -45,7 +45,7 @@ var Entity = (function() {
 var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
+	var SPEED = 0//(0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
@@ -54,7 +54,7 @@ var Asteroid = (function(Entity) {
 		4 : 80
 	};
 	var ROTATION_SPEED = 0.014; // in degrees per ms
-	var EXPLOSION_CHILDREN = 2; // Number of children that are created when asteroid explodes
+	var EXPLOSION_CHILDREN = 1; // Number of children that are created when asteroid explodes
 
 	function Asteroid(sizeIndex) {
 		// Mixin entity base class
@@ -64,7 +64,7 @@ var Asteroid = (function(Entity) {
 			}
 		}
 		// Set sizeIndex
-		sizeIndex = (sizeIndex == null)? 4 : sizeIndex;
+		sizeIndex = (sizeIndex == null)? 1 : sizeIndex;
 		this.sizeIndex = sizeIndex;
 
 		// Initialise Asteroid
@@ -261,7 +261,7 @@ var MissileExplosion =  (function(Entity) {
 			return Physics.hitBoxTypes.CIRCLE
 		},
 		canCollideWidth : function(entity) {
-			var collidesWith = new Array("Asteroid");
+			var collidesWith = new Array("Asteroid", "Alien", "Lazer");
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		render : function() {
@@ -270,7 +270,7 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
 
 			var diameter = this.radius * 2;
-			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
+			this.shape.setBounds(this.x - this.radius, this.y - this.radius, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
@@ -332,7 +332,7 @@ var Missile = (function(Entity) {
 		constructor : Missile,
 		setShape : function(shape) {
 			this.shape = shape;
-			this.shape.graphics.beginFill("#00ff00").drawCircle(0, 0, SIZE, SIZE);
+			this.shape.graphics.beginFill("#ccc").drawCircle(0, 0, SIZE, SIZE);
 			this.shape.regX = SIZE / 2;
 			this.shape.regY = SIZE / 2;
 			this.shape.scaleX = window.devicePixelRatio;
@@ -349,7 +349,7 @@ var Missile = (function(Entity) {
 			return Physics.hitBoxTypes.POINT
 		},
 		canCollideWidth : function(entity) {
-			var collidesWith = new Array("Asteroid");
+			var collidesWith = new Array("Asteroid", "Alien", "Lazer");
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		render : function() {
@@ -425,7 +425,7 @@ var Player = (function(Entity) {
 
 	// Data fields
 	var MAX_MISSILES = 5;
-	var MISSILE_RECHARGE_TIME = 1000; // in ms
+	var MISSILE_RECHARGE_TIME = 500; // in ms
 	var MISSILE_INITIAL_SPEED = 1.4; // Mltiplier for missile exit speed
 	var INVULNERABLE_TIME = 2000; // ms that player is invulnerable after being killed
 
@@ -489,10 +489,9 @@ var Player = (function(Entity) {
 			this.missileCount = 5;
 			this.lastMissileFired = new Date().getTime();
 			this.lastMissileRecharged = new Date().getTime();
-			this.lifeCount = 3;
+			this.lifeCount = 300;
 			this.invulerable = false;
 			this.invulerableStartTime = null;
-
 			/********************/
 			/* END: data fields */
 			/********************/
@@ -519,17 +518,14 @@ var Player = (function(Entity) {
 			return Physics.hitBoxTypes.RECTANGLE
 		},
 		canCollideWidth : function(entity) {
-			var collidesWith = new Array("Asteroid");
+			var collidesWith = new Array("Asteroid", "Alien", "Lazer");
+			//console.log("player collides with " + entity.className() + "?");
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		explode : function() {
 			if(this.invulerable) return;
 
-			if(--this.lifeCount === 0) {
-				// Game over!
-				alert("Game over");
-				this.init();
-			} else {
+			if(--this.lifeCount !== 0) {
 				var savedLifeCount = this.lifeCount;
 				this.shape.graphics.beginFill("#ccc").drawRect(0, 0, WIDTH, HEIGHT);
 				this.shape.updateCache();
@@ -538,12 +534,13 @@ var Player = (function(Entity) {
 				this.invulerableStartTime = new Date().getTime();
 				this.invulerable = true;
 			}
-
 		},
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.rotation = this.rotation;
+
+			// Additional calculations since player origin is in center of object for rotation purposes
 			this.shape.setBounds(this.x - ((WIDTH * this.shape.scaleX) / 2), this.y - ((HEIGHT * this.shape.scaleY) / 2), WIDTH * this.shape.scaleX, HEIGHT * this.shape.scaleY);
 		},
 		update : function() {
@@ -627,4 +624,245 @@ var Player = (function(Entity) {
 	}
 
 	return Player;
+})(Entity);
+
+var Lazer = (function(Entity) {
+	var SPEED = (0.1 * window.devicePixelRatio); // Pixels per ms
+	var SIZE = 2;
+
+	function Lazer() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
+		}
+
+		// Velocity components (between 0 and -1)
+		this.vx = 0;
+		this.vy = 0;
+
+		// Location that missile is heading toward
+		this.xHeading = null;
+		this.yHeading = null;
+
+		// Speed
+		this.speed = SPEED;
+
+		// FPS independent movement
+		this.lastUpdate = new Date().getTime();
+	}
+
+	Lazer.prototype = {
+		constructor : Lazer,
+		setShape : function(shape) {
+			this.shape = shape;
+			this.shape.graphics.beginFill("#00cc00").drawCircle(0, 0, SIZE, SIZE);
+			this.shape.regX = SIZE / 2;
+			this.shape.regY = SIZE / 2;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
+			this.shape.snapToPixel = true;
+			this.shape.setBounds(this.x, this.y, 1, 1);
+		},
+		setHeading : function(xHeading, yHeading) {
+			this.xHeading = xHeading;
+			this.yHeading = yHeading;
+		},
+		getHitBoxType : function() {
+			return Physics.hitBoxTypes.POINT
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Player", "Missile", "MissileExplosion");
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		render : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
+			this.shape.setBounds(this.x, this.y, SIZE * this.shape.regX, SIZE * this.shape.regY);
+		},
+		update : function() {
+			if(this.exploded) return;
+
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
+
+			// Get vector which connects current location to target
+			var xDiff = this.xHeading - this.x;
+			var yDiff = this.yHeading - this.y;
+			this.vx = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  xDiff;
+			this.vy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
+
+			// Update location
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			// If dead add an explosion
+			if(this.isDead()) {
+				this.explode();
+			}
+		},
+		explode : function() {
+			this.exploded = true;
+		},
+		isDead : function() {
+			return this.exploded || (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 5);
+		}
+	}
+
+	return Lazer;
+})(Entity);
+
+var Alien = (function(Entity) {
+	// Constant speed
+	var SPEED = (0.05 * window.devicePixelRatio); // Pixels per ms
+
+	// Time at which interval could change, and percentage to change
+	var HEADING_CHANGE_INTERVAL = 5000;
+	var HEADING_CHANGE_CHANCE = 0.5;
+
+	// Firing intervals
+	var FIRE_INTERVAL = 1000;
+	var FIRE_CHANCE = 0.5;
+
+	// Temporary before sprite is used
+	var SIZE = 15;
+
+	function Alien() {
+		// Mixin entity base class
+		for(var method in Entity) {
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
+		}
+		// Max extents
+		this.maxX = window.spaceRocks.getDimensions().width;
+		this.maxY = window.spaceRocks.getDimensions().height;
+
+		// Velocity components (between 0 and -1)
+		this.vx = 0;
+		this.vy = 0;
+
+		// Location that missile is heading toward
+		this.xHeading = null;
+		this.yHeading = null;
+
+		// Speed
+		this.speed = SPEED;
+
+		// FPS independent movement
+		this.lastUpdate = new Date().getTime();
+		this.updateHeading();
+		this.lastLazer = new Date().getTime();
+	}
+
+	Alien.prototype = {
+		constructor : Alien,
+		setShape : function(shape) {
+			this.shape = shape;
+			this.shape.graphics.beginFill("#00ff00").drawCircle(0, 0, SIZE, SIZE);
+			this.shape.regX = SIZE / 2;
+			this.shape.regY = SIZE / 2;
+			this.shape.scaleX = window.devicePixelRatio;
+			this.shape.scaleY = window.devicePixelRatio;
+			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
+			this.shape.snapToPixel = true;
+			this.shape.setBounds(this.x, this.y, SIZE * this.shape.scaleX, SIZE * this.shape.scaleX);
+		},
+		updateHeading : function() {
+			this.setHeading(this.maxX * Math.random(), this.maxY * Math.random());
+			this.lastHeadingUpdate = new Date().getTime();
+		},
+		setHeading : function(xHeading, yHeading) {
+			this.xHeading = xHeading;
+			this.yHeading = yHeading;
+		},
+		getHitBoxType : function() {
+			return Physics.hitBoxTypes.CIRCLE;
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array("Player", "Missile", "MissileExplosion");
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		render : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
+
+			var diameter = SIZE * 2;
+			this.shape.setBounds(this.x - SIZE, this.y - SIZE, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
+		},
+		update : function() {
+			if(this.exploded) return;
+
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			var timeSinceHeadingUpdate = new Date().getTime() - this.lastHeadingUpdate;
+			this.lastUpdate = new Date().getTime();
+
+			// Possibly change heading
+			if(timeSinceHeadingUpdate > HEADING_CHANGE_INTERVAL) {
+				if(Math.random() > HEADING_CHANGE_CHANCE) {
+					this.updateHeading();
+				}
+				this.lastHeadingUpdate = new Date().getTime();
+			}
+
+			// Possibly shoot lazer
+			this.shootLazer();
+
+			// Get vector which connects current location to target
+			var xDiff = this.xHeading - this.x;
+			var yDiff = this.yHeading - this.y;
+			this.vx = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  xDiff;
+			this.vy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
+
+			// Clamp heading if we're 'close enough'
+			if(Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10) {
+				this.vx = 0;
+				this.vy = 0;
+			}
+
+			// Move alien
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			// Clamp location (origin is in top left of shape)
+			this.x = (this.x - (this.radius * window.devicePixelRatio) > this.maxX)? (0 - this.radius * window.devicePixelRatio) : this.x;
+			this.x = (this.x + (this.radius * window.devicePixelRatio) < 0)? (this.maxX + this.radius * window.devicePixelRatio) : this.x;
+			this.y = (this.y - (this.radius * window.devicePixelRatio) > this.maxY)? (0 - this.radius * window.devicePixelRatio) : this.y;
+			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
+
+			// If dead add an explosion
+			if(this.isDead()) {
+				this.explode();
+			}
+		},
+		shootLazer : function() {
+			var timeSinceLazer = new Date().getTime() - this.lastLazer;
+			if(timeSinceLazer > FIRE_INTERVAL) {
+				if(Math.random() > FIRE_CHANCE) {
+					var shape = new createjs.Shape();
+					var lazer = new Lazer();
+					var playerLocation = window.spaceRocks.getPlayerLocaton()
+
+					lazer.setHeading(playerLocation.x, playerLocation.y);
+					lazer.x = this.x;
+					lazer.y = this.y;
+					lazer.setShape(shape);
+					window.spaceRocks.addEntity(lazer, 1);
+				}
+
+				this.lastLazer = new Date().getTime();
+			}
+		},
+		explode : function() {
+			// @TODO Some animations here...
+			this.exploded = true;
+		},
+		isDead : function() {
+			return this.exploded;
+		}
+	}
+
+	return Alien;
 })(Entity);
