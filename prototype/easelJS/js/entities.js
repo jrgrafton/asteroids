@@ -270,7 +270,7 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.graphics.clear().beginFill("#eee").drawCircle(0, 0, this.radius, this.radius);
 
 			var diameter = this.radius * 2;
-			this.shape.setBounds(this.x - this.radius, this.y - this.radius, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
+			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
