@@ -15,22 +15,95 @@ html, body {
 	font-family: "Exo 2";
 	font-style: normal;
 	overflow: hidden;
+	position: relative;
 }
 
 canvas {
 	background: black;
 }
 
+h1 {
+	font-size: 6.15em;
+	margin: 0px;
+}
+
 .clear {
 	clear: both;
 }
 
-/*******************/
-/**** UI styles ****/
-/*******************/
-#ui #in-game {
-	position: relative;;
+.light {
+	font-weight: 100;
 }
+
+.extra-bold {
+	font-weight: 900;
+}
+.button {
+	width : 174px;
+	height: 49px;
+	background-image: url('../img/button-off.png');
+	background-size: 174px 49px;
+	line-height: 44px;
+	font-size: 1.66em;
+}
+
+.button.selected {
+	background-image: url('../img/button-on.png');
+}
+.button:hover {
+	cursor: pointer;;
+}
+/***************************/
+/**** UI styles - intro ****/
+/***************************/
+body.intro #intro {
+	display: block;
+}
+
+#intro {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	text-align: center;
+	width: 100%;
+	margin-top: 20%;
+	display: none;
+}
+
+#intro .red.line {
+	width: 90%;
+	height: 5px;
+	background-color: #cc423b;
+	margin: 0 auto;
+	margin-top: 0.5em;
+	position: relative;
+	z-index: 1;
+}
+#intro h1.light {
+	z-index: 0;
+	opacity: 0;
+}
+#intro h1.extra-bold {
+	margin-top: -10px;
+	opacity: 0;
+}
+#intro .button {
+	margin: 0 auto;
+	margin-top: 30%;
+	opacity: 0;
+}
+/*****************************/
+/**** UI styles - in game ****/
+/*****************************/
+#ui #in-game {
+	position: relative;
+	display: none;
+}
+
+body.in-game #ui #in-game {
+	display: block;
+}
+
 #ui #in-game #hud {
 	position: absolute;
 	top: 0px;
@@ -39,6 +112,7 @@ canvas {
 	text-align: center;
 	padding-top: 1em;
 	pointer-events: none;
+	opacity: 0;
 }
 
 #ui #in-game #hud #lives {

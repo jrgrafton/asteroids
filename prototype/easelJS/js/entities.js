@@ -116,8 +116,8 @@ var Asteroid = (function(Entity) {
 			this.maxRadius = asteroidRadius * 1;
 
 			// Shortest and longest lengths for lines between edges of asteroid
-			var minLineDistance = (2 * Math.PI) / 20;
-			var maxLineDistance = (2 * Math.PI) / 15;
+			var minLineDistance = (2 * Math.PI) / 18;
+			var maxLineDistance = (2 * Math.PI) / 13;
 
 			// First point is at 0 rad
 			this.points = new Array();
@@ -127,26 +127,34 @@ var Asteroid = (function(Entity) {
 			var angle = 0.0;
 			var vx = 1;
 			var vy = 0;
-			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
+			shape.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#ffffff");
+
 			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
 			this.points.push(firstPoint);
+
 			while(angle < ((2 * Math.PI) - maxLineDistance)) {
 				var lineLength = this.getRandomInRange(minLineDistance, maxLineDistance);
 				angle += this.getRandomInRange(minLineDistance, maxLineDistance);
 				distanceFromCenter = this.getRandomInRange(this.minRadius, this.maxRadius);
+
+
 				vx = Math.cos(angle);
 				vy = Math.sin(angle);
 				nextPoint = new createjs.Point(vx * distanceFromCenter, vy * distanceFromCenter);
 				this.points.push(nextPoint);
 
+				var xDist = (currentPoint.x - nextPoint.x) / 2;
+				var yDist = (currentPoint.y - nextPoint.y) / 2;
+
 				var dist = Math.abs(currentPoint.x - nextPoint.x) + Math.abs(currentPoint.y - nextPoint.y) / 2;
 
-				shape.graphics.arcTo(currentPoint.x, currentPoint.y + nextPoint.y >> 1,  nextPoint.x,  nextPoint.y,  asteroidRadius / 6);
+				shape.graphics.arcTo(currentPoint.x + nextPoint.x >> 1, currentPoint.y + nextPoint.y >> 1,  nextPoint.x,  nextPoint.y,  asteroidRadius / 6);
+
 				currentPoint = nextPoint;
 			}
 
 			// Draw final line (@TODO look into curveTo)
-			shape.graphics.arcTo(firstPoint.x, currentPoint.y, firstPoint.x, firstPoint.y, 5);
+			shape.graphics.arcTo(firstPoint.x, currentPoint.y, firstPoint.x, firstPoint.y, 2);
 			shape.graphics.lineTo(firstPoint.x, firstPoint.y);
 			shape.graphics.endStroke();
 		},
@@ -554,8 +562,10 @@ var Player = (function(Entity) {
 			this.lastMissileFired = new Date().getTime();
 			this.lastMissileRecharged = new Date().getTime();
 			this.lifeCount = 3;
-			this.invulerable = false;
-			this.invulerableStartTime = null;
+
+			// Start invulnerable
+			this.invulerableStartTime = new Date().getTime();
+			this.invulerable = true;
 			/********************/
 			/* END: data fields */
 			/********************/
