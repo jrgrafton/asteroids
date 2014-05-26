@@ -1,3 +1,6 @@
+/***********************/
+/**** Global styles ****/
+/***********************/
 @import url("fonts.css");
 html, body {
 	margin: 0px;
@@ -7,8 +10,102 @@ html, body {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	color: white;
+	font-size: 13px;
+	font-family: "Exo 2";
+	font-style: normal;
+	overflow: hidden;
 }
 
 canvas {
 	background: black;
+}
+
+.clear {
+	clear: both;
+}
+
+/*******************/
+/**** UI styles ****/
+/*******************/
+#ui #in-game {
+	position: relative;;
+}
+#ui #in-game #hud {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	text-align: center;
+	padding-top: 1em;
+	pointer-events: none;
+}
+
+#ui #in-game #hud #lives {
+	width: 33%;
+	float: left;
+}
+#ui #in-game #hud #lives .life {
+	display:inline-block;
+}
+
+#ui #in-game #hud #points {
+	width: 33%;
+	float: left;
+	color: #cc423b;
+	margin-top: -4px;
+}
+#ui #in-game #hud #points #points-container {
+	display: inline-block;
+}
+#ui #in-game #hud #points #points-container #count {
+	float: left;
+	font-size: 2.315em;
+	font-weight: 600;
+
+}
+#ui #in-game #hud #points #points-container #multiplier {
+	float: left;
+	font-size: 1.33em;
+	margin-top: 0.33em;
+}
+
+#ui #in-game #hud #missiles {
+	width: 33%;
+	float:left;
+}
+
+#ui #in-game #hud #missiles .missile {
+	width: 15px;
+	height: 32px;
+	background-image: url('../img/missile-full.png');
+	background-size: 15px 32px;
+	display:inline-block;
+}
+
+#ui #in-game #hud #missiles .missile.empty {
+	background-image: url('../img/missile-empty.png');
+}
+
+#ui #in-game #hud #lives .life {
+	width: 15px;
+	height: 28px;
+	background-image: url('../img/life-full.png');
+	background-size: 15px 28px;
+	display:inline-block;
+}
+
+#ui #in-game #hud #lives .life.empty {
+	background-image: url('../img/life-empty.png');
+}
+
+#ui .score {
+	color: #cc423b;
+	font-size: 1.5em;
+	font-weight: bold;
+	text-shadow:
+    -1px -1px 0 #bce9ff,
+    1px -1px 0 #bce9ff,
+    -1px 1px 0 #bce9ff,
+    1px 1px 0 #bce9ff; 
 }

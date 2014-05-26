@@ -5,9 +5,12 @@
 	<meta name="apple-touch-fullscreen" content="yes" />
 	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0, target-densitydpi=device-dpi">
 
+	<link href="//fonts.googleapis.com/css?family=Exo+2	:100italic,100,200italic,200,300italic,300,400italic,400,500italic,500,600italic,600,700italic,700,800italic,800,900italic,900" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/animate.css" type="text/css">
 	<link rel="stylesheet" href="css/style.css" type="text/css">
 
 	<!-- Third party libraries -->
+	<script src="js/libraries/jquery.2.1.1.min.js"></script>
 	<script src="js/libraries/tweenjs-0.5.1.min.js"></script>
     <script src="js/libraries/easeljs-0.7.1.min.js"></script>
     <script src="js/libraries/SAT.js"></script>
@@ -20,7 +23,33 @@
 	<script src="js/main.js"></script>
 </head>
 <body>
-	<div id="fps"></div>
+	<div id="ui">
+    	<div id="in-game">
+    		<div id="score"></div>
+    		<div id="hud">
+    			<div id="lives">
+    				<div id="lives-container">
+	    				<div class="life"></div>
+	    				<div class="life"></div>
+	    				<div class="life"></div>
+    				</div>
+    			</div>
+    			<div id="points">
+    				<div id="points-container">
+	    				<div id="count">0</div>
+	    				<div id="multiplier"><sup>x1</sup></div>
+    				</div>
+    			</div>
+    			<div id="missiles">
+    				<div class="missile"></div>
+    				<div class="missile"></div>
+    				<div class="missile"></div>
+    				<div class="missile"></div>
+    				<div class="missile"></div>
+    			</div>
+    		</div>
+    	</div>
+    </div>
     <canvas id="game"></canvas>
 </body>
 </html>

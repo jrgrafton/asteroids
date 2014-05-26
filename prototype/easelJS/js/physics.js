@@ -176,8 +176,10 @@ var CollisionHandler = (function() {
 						break;
 						case "MissileExplosion":
 							// Explode asteroid
-							e1.explode();
-							window.spaceRocks.addScore(10);
+							if(!e1.isDead()) {
+								e1.explode();
+								window.spaceRocks.addScore(20 * Math.random(), e2.x, e2.y);
+							}
 						break;
 						case "Player":
 							e2.explode();
@@ -185,6 +187,7 @@ var CollisionHandler = (function() {
 						default:
 						break;
 					}
+					break;
 				break;
 				case "Player":
 					switch(e2.className()) {
@@ -200,24 +203,26 @@ var CollisionHandler = (function() {
 						default:
 						break;
 					}
+					break;
 				default:
 				break;
 				case "Alien" : {
 					switch(e2.className()) {
 						case "Missile" :
-							// Explode alien and missile
-							e1.explode();
+							// Explode missile
 							e2.explode();
-							window.spaceRocks.addScore(100);
 						break;
 						case "MissileExplosion" :
 							// Explode alien
-							e1.explode();
-							window.spaceRocks.addScore(100);
+							if(!e1.isDead()) {
+								e1.explode();
+								window.spaceRocks.addScore(200 * Math.random(), e1.x, e1.y);
+							}
 						break;
 						default:
 						break;
 					}
+					break;
 				}
 				case "Lazer" : {
 					switch(e2.className()) {
@@ -234,6 +239,7 @@ var CollisionHandler = (function() {
 						default:
 						break;
 					}
+					break;
 				}
 			}
 		}

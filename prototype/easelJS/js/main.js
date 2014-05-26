@@ -107,12 +107,12 @@ var SpaceRocks = (function() {
 		/***********************************/
 		init : function() {
 			// FPS tracker
-			_this.meter = new Stats();
+			/*_this.meter = new Stats();
 			_this.meter.setMode(0);
 			_this.meter.domElement.style.position = 'absolute';
 			_this.meter.domElement.style.left = '0px';
 			_this.meter.domElement.style.top = '0px';
-			document.body.appendChild( _this.meter.domElement);
+			document.body.appendChild( _this.meter.domElement); */
 
 			// Set dimensions
 			_this.canvas = document.getElementById("game");
@@ -122,6 +122,9 @@ var SpaceRocks = (function() {
 			_this.canvas.height = _this.height;
 			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
 			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
+			$(document.body).css({
+				"width" : _this.canvas.style.width
+			})
 
 			// Create stage and enable touch
 			_this.stage = new createjs.Stage("game");
@@ -162,7 +165,9 @@ var SpaceRocks = (function() {
 			// Create HUD
 			_this.hud = new HUD(_this, _this.player);
 
+			// Add initial entities
 			_this.addInitialAsteroids();
+			_this.addStars();
 		},
 		attachObservers : function() {
 			// Local vars
@@ -304,7 +309,7 @@ var SpaceRocks = (function() {
 			// Check for game over before proceeding
 			if(!_this.checkGameOver()) {
 				// FPS meter
-				_this.meter.begin();
+				//_this.meter.begin();
 				++_this.tickCount;
 
 				// Update and render navigation
@@ -325,7 +330,7 @@ var SpaceRocks = (function() {
 
 				// Draw everything to stage
 				_this.stage.update();
-				_this.meter.end();
+				//_this.meter.end();
 			} else {
 				// Stop ticking and show game over dialogue
 				alert("Game over");
@@ -352,8 +357,8 @@ var SpaceRocks = (function() {
 			}
 		},
 		addAlien : function() {
-			// Alien has 50% chance of being added every 30 seconds
-			var alienInterval = 10;
+			// Alien has 50% chance of being added every 10 seconds
+			var alienInterval = 1000;
 			var alienChance = 0.5;
 
 			if(_this.tickCount % alienInterval === 0) {
@@ -413,8 +418,25 @@ var SpaceRocks = (function() {
 			_this.addEntity(asteroid);
 		},
 		// Called by other functions when score should increase
-		addScore : function(points) {
+		addScore : function(points, x, y) {
+			points = Math.round(points) + 1;
 			this.score += points * _this.level;
+			_this.hud.triggerScoreAnimation(points, x, y);
+		},
+		addStars : function() {
+			var particleCount = 200;
+
+			for(var i = 0; i < particleCount; i++) {
+				var size = (Math.random() * 2) + 1;
+				var x = Math.random() * _this.width;
+				var y = Math.random() * _this.height;
+
+				var color = "" + (Math.round(Math.random() * 255)).toString(16);
+				color = "#" + color + color + color;
+				var particle = new Particle({x : x, y : y}, color, {vx : 0, vy : 0}, 0, size, "square");
+				particle.maxAge = Number.MAX_VALUE;
+				_this.addEntity(particle, 0);
+			}
 		},
 		checkGameOver : function() {
 			return _this.player.lifeCount === 0;

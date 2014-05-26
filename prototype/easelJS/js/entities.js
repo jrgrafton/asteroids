@@ -45,7 +45,7 @@ var Entity = (function() {
 var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = 0;//(0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
+	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
@@ -54,7 +54,7 @@ var Asteroid = (function(Entity) {
 		4 : 80
 	};
 	var ROTATION_SPEED = 0.014; // in degrees per ms
-	var EXPLOSION_CHILDREN = 1; // Number of children that are created when asteroid explodes
+	var EXPLOSION_CHILDREN = 2; // Number of children that are created when asteroid explodes
 
 	function Asteroid(sizeIndex) {
 		// Mixin entity base class
@@ -181,7 +181,7 @@ var Asteroid = (function(Entity) {
 					// Set start location
 					asteroid.x = this.x;
 					asteroid.y = this.y;
-					asteroid.speed = this.speed * 1.4;
+					asteroid.speed = this.speed * 1.2;
 					asteroid.setShape(new createjs.Shape());
 
 					// Add to entity list
@@ -256,8 +256,6 @@ var MissileExplosion =  (function(Entity) {
 		constructor : MissileExplosion,
 		setShape : function(shape) {
 			this.shape = new createjs.Bitmap("../img/explosion.png");
-			//this.shape.regX = (WIDTH / 2) * window.devicePixelRatio;
-			//this.shape.regY = (HEIGHT / 2) * window.devicePixelRatio;
 			this.shape.snapToPixel = true;
 			this.render();
 		},
@@ -277,8 +275,8 @@ var MissileExplosion =  (function(Entity) {
 			this.shape.scaleX = 0.02 * diameter * window.devicePixelRatio;
 			this.shape.scaleY = 0.02 * diameter * window.devicePixelRatio;
 
-			this.shape.regX = this.radius;
-			this.shape.regY = this.radius;
+			this.shape.regX = this.shape.image.width / 2;
+			this.shape.regY = this.shape.image.height / 2;
 			
 			this.shape.setBounds(this.x, this.y, diameter * window.devicePixelRatio, diameter * window.devicePixelRatio);
 		},
@@ -313,7 +311,7 @@ var Missile = (function(Entity) {
 	var TURN_SPEED = 0.0006; // Speed of turn in MS. 1 = turn to face in 1ms 
 
 	// Temporary before sprite is used
-	var SIZE = 2;
+	var SIZE = 1;
 
 	function Missile() {
 		// Mixin entity base class
@@ -361,7 +359,7 @@ var Missile = (function(Entity) {
 
 			// Add shape to stage for animations
 			this.animationCanvas = new createjs.Shape();
-			window.spaceRocks.addShape(this.animationCanvas, 1);
+			//window.spaceRocks.addShape(this.animationCanvas, 1);
 		},
 		setHeading : function(xHeading, yHeading) {
 			this.xHeading = xHeading;
@@ -380,13 +378,13 @@ var Missile = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, SIZE * this.shape.regX, SIZE * this.shape.regY);
 
 			// Render missile trail
-			this.animationCanvas.graphics.clear();
-			for(var i = 0; i < this.path.length; i++) {
+			//this.animationCanvas.graphics.clear();
+			/* for(var i = 0; i < this.path.length; i++) {
 				if(this.path[i] == null) continue; // TODO: make this a linked list
 
 				var point = this.path[i];
 				this.animationCanvas.graphics.beginFill("#888").drawCircle(point.x, point.y, 1, 1);
-			}
+			} */
 		},
 		update : function() {
 			if(this.exploded) return;
@@ -395,9 +393,15 @@ var Missile = (function(Entity) {
 			this.lastUpdate = new Date().getTime();
 
 			// Add current location to path
-			this.path.push({ x : this.x, y : this.y });
+			/* this.path.push({ x : this.x, y : this.y });
 			if(this.path.length > this.maxPathPoints) {
 				this.path.shift();
+			} */
+
+			if(Math.random() > 0.1) {
+				var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
+				particle.maxAge = 500;
+				window.spaceRocks.addEntity(particle, 1);
 			}
 
 			// Get vector which connects current location to target
@@ -475,8 +479,8 @@ var Missile = (function(Entity) {
 var Player = (function(Entity) {
 	/*  Static vars */
 	// Dimensions
-	var WIDTH = 20;
-	var HEIGHT = 33;
+	var WIDTH = 20 * window.devicePixelRatio;
+	var HEIGHT = 33 * window.devicePixelRatio;
 
 	// Speed fields
 	var ACCELERATION = (0.00000150 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
@@ -485,7 +489,7 @@ var Player = (function(Entity) {
 
 	// Data fields
 	var MAX_MISSILES = 5;
-	var MISSILE_RECHARGE_TIME = 500; // in ms
+	var MISSILE_RECHARGE_TIME = 1000; // in ms
 	var MISSILE_INITIAL_SPEED = 1.4; // Mltiplier for missile exit speed
 	var INVULNERABLE_TIME = 4000; // ms that player is invulnerable after being killed
 
@@ -549,7 +553,7 @@ var Player = (function(Entity) {
 			this.missileCount = 5;
 			this.lastMissileFired = new Date().getTime();
 			this.lastMissileRecharged = new Date().getTime();
-			this.lifeCount = 300;
+			this.lifeCount = 3;
 			this.invulerable = false;
 			this.invulerableStartTime = null;
 			/********************/
@@ -559,8 +563,8 @@ var Player = (function(Entity) {
 		/* Setter function so caching can be setup immediately */
 		setupShape : function() {
 			this.shape = new createjs.Bitmap("../img/player.png");
-			this.shape.regX = (WIDTH / 2) * window.devicePixelRatio;
-			this.shape.regY = (HEIGHT / 2) * window.devicePixelRatio;
+			this.shape.regX = WIDTH / 2;
+			this.shape.regY = HEIGHT / 2;
 			this.shape.snapToPixel = true;
 		},
 		setHeading : function(x, y) {
@@ -581,6 +585,22 @@ var Player = (function(Entity) {
 		explode : function() {
 			if(this.invulerable) return;
 
+			// Add particles
+			var cx  = this.x + (this.vx * (this.width / 2));
+			var cy = this.y + (this.vy * (this.height / 2));
+
+			var particleCount = Math.random() * 5 + 5;
+			for(var i = 0; i < particleCount; i++) {
+				var size = (Math.random() * 5) + 5;
+				var vx = Math.random() * 2 - 1;
+				var vy = Math.random() * 2 - 1;
+
+				var particle = new Particle({x : cx, y : cy}, "#bce9ff", {vx : vx, vy : vy}, (this.speed / 1.5 + 0.05), size, "line");
+				window.spaceRocks.addEntity(particle, 1);
+			}
+
+
+			// Reset ship
 			if(--this.lifeCount !== 0) {
 				var savedLifeCount = this.lifeCount;
 				this.init();
@@ -680,6 +700,31 @@ var Player = (function(Entity) {
 				window.spaceRocks.addEntity(missile, 1);
 				this.missileFired = false;
 			}
+
+			// Create engine particles
+			if(this.speed > 0) {
+				// More particles the faster your going
+				if(Math.random() * this.speed > MAX_SPEED / 3) {
+					// Generate particles in the middle of the ship
+					var cx  = this.x + (this.vx * (this.width / 2));
+					var cy = this.y + (this.vy * (this.height / 2));
+
+					// Take variation of inverse of current velocity vetor
+					var vx = 0 - this.vx;
+					var vy = 0 - this.vy;
+
+					// vx between -1 to 1
+						// need to possibly pull it back toward 0
+
+					for(var i = 0; i < 2; i++) {
+						var modX = (Math.random() + 0.5);
+						var modY = (Math.random() + 0.5);
+
+						var particle = new Particle({x : cx, y : cy}, "#84a3b3", {vx : vx * modX, vy : vy * modY}, this.speed, 1, "square");
+							window.spaceRocks.addEntity(particle, 1);
+					}
+				}
+			}
 		}
 	}
 
@@ -742,7 +787,6 @@ var Lazer = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, 1, 1);
 
 			this.shape.graphics.setStrokeStyle(2).beginStroke("#00dd53").moveTo(0, 0).lineTo(this.vx * 5 * window.devicePixelRatio, this.vy * 5 * window.devicePixelRatio).endStroke();
-			//this.shape.update();
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
@@ -790,8 +834,8 @@ var Alien = (function(Entity) {
 	var FIRE_CHANCE = 0.5;
 
 	// Temporary before sprite is used
-	var WIDTH = 60;
-	var HEIGHT = 45;
+	var WIDTH = 30 * window.devicePixelRatio;
+	var HEIGHT = 23  * window.devicePixelRatio;
 
 	function Alien() {
 		// Mixin entity base class
@@ -800,6 +844,9 @@ var Alien = (function(Entity) {
 				this[method] = Entity[method];
 			}
 		}
+		this.width = WIDTH;
+		this.height = HEIGHT;
+
 		// Max extents
 		this.maxX = window.spaceRocks.getDimensions().width;
 		this.maxY = window.spaceRocks.getDimensions().height;
@@ -808,7 +855,7 @@ var Alien = (function(Entity) {
 		this.vx = 0;
 		this.vy = 0;
 
-		// Location that missile is heading toward
+		// Location that alien is heading toward
 		this.xHeading = null;
 		this.yHeading = null;
 
@@ -890,10 +937,10 @@ var Alien = (function(Entity) {
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in top left of shape)
-			this.x = (this.x - (this.radius * window.devicePixelRatio) > this.maxX)? (0 - this.radius * window.devicePixelRatio) : this.x;
-			this.x = (this.x + (this.radius * window.devicePixelRatio) < 0)? (this.maxX + this.radius * window.devicePixelRatio) : this.x;
-			this.y = (this.y - (this.radius * window.devicePixelRatio) > this.maxY)? (0 - this.radius * window.devicePixelRatio) : this.y;
-			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
+			this.x = (this.x - (this.width) > this.maxX)? 0 : this.x;
+			this.x = (this.x + (this.width) < 0)? this.maxX : this.x;
+			this.y = (this.y - (this.height) > this.maxY)? 0 : this.y;
+			this.y = (this.y + (this.height) < 0)? this.maxY : this.y;
 
 			// If dead add an explosion
 			if(this.isDead()) {
@@ -919,7 +966,21 @@ var Alien = (function(Entity) {
 			}
 		},
 		explode : function() {
-			// @TODO Some animations here...
+			if(this.exploded) return;
+
+			// Add particles
+			var cx  = this.x + (this.width / 2);
+			var cy = this.y + (this.height / 2);
+
+			var particleCount = Math.random() * 5 + 5;
+			for(var i = 0; i < particleCount; i++) {
+				var size = (Math.random() * 5) + 5;
+				var vx = Math.random() * 2 - 1;
+				var vy = Math.random() * 2 - 1;
+				var particle = new Particle({x : cx, y : cy}, "#00dd53", {vx : vx, vy : vy}, this.speed + 0.05, size, "line");
+				window.spaceRocks.addEntity(particle, 2);
+			}
+
 			this.exploded = true;
 		},
 		isDead : function() {
@@ -928,4 +989,82 @@ var Alien = (function(Entity) {
 	}
 
 	return Alien;
+})(Entity);
+
+var Particle = (function(Entity) {
+	function Particle(location, color, velocityVectors, speed, size, type) {
+		// Mixin entity base class
+		for(var method in Entity) {
+			if(this[method] == undefined) {
+				this[method] = Entity[method];
+			}
+		}
+
+		// Initialise Particles
+		this.lastUpdate = new Date().getTime();
+		this.maxAge = 2000 * Math.random();
+		this.createdTime = new Date().getTime();
+		this.rotationSpeed = (Math.random() + 0.2) * 6;
+		this.rotation = Math.random() * 360;
+
+		// Initialise particle
+		this.init(location, color, velocityVectors, speed, size, type);
+	}
+
+	Particle.prototype = {
+		constructor : Particle,
+		init : function(location, color, velocityVectors, speed, size, type) {
+			this.shape = new createjs.Shape();
+			size *= window.devicePixelRatio; // Faster than scaling up
+			this.regX = size / 2;
+			this.regY = size / 2;
+			this.shape.snapToPixel = true;
+
+			switch(type) {
+				case "square":
+					this.shape.graphics.beginFill(color).drawRect(0, 0, size, size);
+				break;
+				case "line" :
+					this.shape.graphics.setStrokeStyle(3 * window.devicePixelRatio).beginStroke(color).moveTo(0, 0).lineTo(0, size).endStroke();
+				break;
+			}
+
+			this.shape.cache(-size, -size, size * 2, size * 2, window.devicePixelRatio);
+
+			this.x = location.x;
+			this.y = location.y;
+			this.vx = velocityVectors.vx;
+			this.vy = velocityVectors.vy;
+			this.speed = speed;
+			this.size = size;
+		},
+		canCollideWidth : function(entity) {
+			var collidesWith = new Array();
+			return collidesWith.indexOf(entity.className()) !== -1;
+		},
+		getHitBoxType : function() {
+			return Physics.hitBoxTypes.POINT;
+		},
+		render : function() {
+			this.shape.x = this.x;
+			this.shape.y = this.y;
+			this.shape.rotation = this.rotation;
+		},
+		update : function() {
+			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			this.lastUpdate = new Date().getTime();
+
+			// Update location
+			this.x += (timeSinceUpdate * this.speed) * this.vx;
+			this.y += (timeSinceUpdate * this.speed) * this.vy;
+
+			this.rotation += this.rotationSpeed;
+			this.rotation %= 360;
+		},
+		isDead : function() {
+			return (new Date().getTime() - this.createdTime > this.maxAge);
+		}
+	}
+
+	return Particle;
 })(Entity);
