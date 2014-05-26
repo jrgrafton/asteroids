@@ -263,7 +263,7 @@ var MissileExplosion =  (function(Entity) {
 	MissileExplosion.prototype = {
 		constructor : MissileExplosion,
 		setShape : function(shape) {
-			this.shape = new createjs.Bitmap("../img/explosion.png");
+			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/explosion.png");
 			this.shape.snapToPixel = true;
 			this.render();
 		},
@@ -384,27 +384,12 @@ var Missile = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.setBounds(this.x, this.y, SIZE * this.shape.regX, SIZE * this.shape.regY);
-
-			// Render missile trail
-			//this.animationCanvas.graphics.clear();
-			/* for(var i = 0; i < this.path.length; i++) {
-				if(this.path[i] == null) continue; // TODO: make this a linked list
-
-				var point = this.path[i];
-				this.animationCanvas.graphics.beginFill("#888").drawCircle(point.x, point.y, 1, 1);
-			} */
 		},
 		update : function() {
 			if(this.exploded) return;
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
 			this.lastUpdate = new Date().getTime();
-
-			// Add current location to path
-			/* this.path.push({ x : this.x, y : this.y });
-			if(this.path.length > this.maxPathPoints) {
-				this.path.shift();
-			} */
 
 			if(Math.random() > 0.1) {
 				var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
@@ -572,7 +557,7 @@ var Player = (function(Entity) {
 		},
 		/* Setter function so caching can be setup immediately */
 		setupShape : function() {
-			this.shape = new createjs.Bitmap("../img/player.png");
+			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/player.png");
 			this.shape.regX = WIDTH / 2;
 			this.shape.regY = HEIGHT / 2;
 			this.shape.snapToPixel = true;
@@ -881,7 +866,7 @@ var Alien = (function(Entity) {
 	Alien.prototype = {
 		constructor : Alien,
 		setShape : function(shape) {
-			this.shape = new createjs.Bitmap("../img/alien.png");
+			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/alien.png");
 			this.shape.snapToPixel = true;
 			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 			this.shape.alpha = 0;
