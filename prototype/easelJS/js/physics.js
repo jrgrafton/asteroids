@@ -177,7 +177,7 @@ var CollisionHandler = (function() {
 						case "MissileExplosion":
 							// Explode asteroid
 							e1.explode();
-							window.spaceRocks.score += 10;
+							window.spaceRocks.addScore(10);
 						break;
 						case "Player":
 							e2.explode();
@@ -195,6 +195,7 @@ var CollisionHandler = (function() {
 						case "Lazer" :
 							// Explode player
 							e1.explode();
+							e2.explode();
 						break;
 						default:
 						break;
@@ -207,12 +208,12 @@ var CollisionHandler = (function() {
 							// Explode alien and missile
 							e1.explode();
 							e2.explode();
-							window.spaceRocks.score += 100;
+							window.spaceRocks.addScore(100);
 						break;
 						case "MissileExplosion" :
 							// Explode alien
 							e1.explode();
-							window.spaceRocks.score += 100;
+							window.spaceRocks.addScore(100);
 						break;
 						default:
 						break;

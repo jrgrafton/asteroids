@@ -144,20 +144,20 @@ var SpaceRocks = (function() {
 
 			var navigationCircle = new createjs.Shape();
 			navigationCircle.name = "navigationCircle";
-			navigationCircle.graphics.setStrokeStyle(4).beginStroke("#0000ff").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
+			navigationCircle.graphics.setStrokeStyle(4).beginStroke("#15558b").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
 			navigationCircle.cache(-((35 * window.devicePixelRatio) + 8), -((35 * window.devicePixelRatio) + 8), (35 * window.devicePixelRatio) * 2 + 16, (35 * window.devicePixelRatio) * 2 + 16, window.devicePixelRatio);
 
 			var navigationLine = new createjs.Shape();
 			navigationLine.name = "navigationLine";
 			_this.navigationContainer.addChild(navigationCircle, navigationLine);
-			_this.stage.addChild(_this.navigationContainer);
+			_this.stage.addChildAt(_this.navigationContainer, 0);
 
 			// Create player
-			_this.player = new Player(_this)
-			_this.player.setShape(new createjs.Shape());
+			_this.player = new Player(_this);
+			_this.player.setupShape();
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
-			_this.addEntity(_this.player);
+			_this.addEntity(_this.player, 1);
 
 			// Create HUD
 			_this.hud = new HUD(_this, _this.player);
@@ -273,19 +273,23 @@ var SpaceRocks = (function() {
 			navigationCircle.x = _this.lastTouchX;
 			navigationCircle.y = _this.lastTouchY;
 
-			navigationLine.graphics.clear().setStrokeStyle(2).beginStroke("#0000ff").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
+			navigationLine.graphics.clear().setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#15558b").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
 
 		addEntity : function(entity, index) {
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
-			_this.stage.addChildAt(entity.shape);
+			_this.stage.addChildAt(entity.shape, index);
 		},
-
+		addShape : function(shape, index) {
+			_this.stage.addChildAt(shape, index);
+		},
+		removeShape : function(shape) {
+			_this.stage.removeChild(shape);
+		},
 		getDimensions : function() {
 			return { width: _this.width, height: _this.height};
 		},
-
 		// Needed for when alien is trying to fire at player
 		getPlayerLocaton : function() {
 			return { 
@@ -349,7 +353,7 @@ var SpaceRocks = (function() {
 		},
 		addAlien : function() {
 			// Alien has 50% chance of being added every 30 seconds
-			var alienInterval = 30000;
+			var alienInterval = 10;
 			var alienChance = 0.5;
 
 			if(_this.tickCount % alienInterval === 0) {
@@ -369,7 +373,7 @@ var SpaceRocks = (function() {
 					alien.setShape(new createjs.Shape());
 
 					// Add to entity list
-					_this.addEntity(alien);
+					_this.addEntity(alien, 2);
 				}
 			}	
 
