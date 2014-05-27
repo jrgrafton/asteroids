@@ -53,6 +53,9 @@ h1 {
 .button:hover {
 	cursor: pointer;;
 }
+.no-pointer-events {
+	pointer-events: none;
+}
 /***************************/
 /**** UI styles - intro ****/
 /***************************/

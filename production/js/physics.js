@@ -178,7 +178,7 @@ var CollisionHandler = (function() {
 							// Explode asteroid
 							if(!e1.isDead()) {
 								e1.explode();
-								window.spaceRocks.addScore(20 * Math.random(), e2.x, e2.y);
+								window.spaceRocks.addScore(10 * (e1.sizeIndex + 1), e2.x, e2.y);
 							}
 						break;
 						case "Player":
@@ -216,7 +216,7 @@ var CollisionHandler = (function() {
 							// Explode alien
 							if(!e1.isDead()) {
 								e1.explode();
-								window.spaceRocks.addScore(200 * Math.random(), e1.x, e1.y);
+								window.spaceRocks.addScore(120, e1.x, e1.y);
 							}
 						break;
 						default:

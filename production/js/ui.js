@@ -53,7 +53,7 @@ var HUD = (function() {
 			}
 		},
 		triggerScoreAnimation : function(score, x, y) {
-			var style = "position:absolute;left:" + x / window.devicePixelRatio + "px;top:" + y / window.devicePixelRatio + "px;";
+			var style = "position:absolute;left:" + x / window.devicePixelRatio + "px;top:" + y / window.devicePixelRatio + "px;font-size:" + (Math.log(score) * 0.7) + "em";
 
 			var scoreDiv = $("<div class='score fadeInUp animated' style='" + style + "'>" + score + "</div>");
 			$("#ui #score").append(scoreDiv);

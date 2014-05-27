@@ -1,49 +1,3 @@
-/*
-	TODO:
-		a. Retina collisions
-	
-
-	5. Add alien
-		a. Consider conditions for adding
-		b. Movement?
-		c. Firing at player?
-	6. Additional collisions
-		a. Alien bullet --> player
-		b. Missile --> alien
-		c. Player --> alien
-	7. Add conditions
-		c. Destroy all meteors
-	8. Screen state management
-		a. Start screen
-		b. Game screen
-		c. End screen
-	
-	9. GFX
-		a. Go back to design phase
-			i. iPad / iPhone scaling
-			ii. End screen
-		b. Start screen
-			i. Buttons
-			ii. Stars
-			iii. Animations (TWEEN)
-		c. In game
-			i. Bitmaps
-				i. Spaceship
-			ii. Effects
-				i. Missile
-				ii. Spaceship accelerating
-				iii. Missile hit on asteroid
-			iii. Animations
-				i. Missile explode
-		c. End game
-			i. Tween appearance
-	10. Gameplay tweaks
-		a. Number of asteroids (per device)
-		b. Ensure no asteroids spawning on player
-		c. Speed and acceration
-		d. Point scoring
-*/
-
 /************************************/
 /** ------ EaselJS additions------ **/
 /************************************/
@@ -158,6 +112,8 @@ var SpaceRocks = (function() {
 					$("h1.extra-bold").addClass("bounceIn animated");
 					$("#intro .button").addClass("fadeIn animated");
 					$("#intro .button").click(function() {
+						// Disable touch events for intro screen
+						$("#intro").addClass("no-pointer-events");
 						$(".line.red").addClass("slideOutRight");
 						$("h1.light, h1.extra-bold, #intro .button").addClass("fadeOut").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 							$(document.body).removeClass("intro game-over").addClass("in-game");
@@ -478,7 +434,7 @@ var SpaceRocks = (function() {
 		},
 		// Called by other functions when score should increase
 		addScore : function(points, x, y) {
-			points = Math.round(points) + 1;
+			points = Math.round(points);
 			this.score += points * _this.level;
 			_this.hud.triggerScoreAnimation(points, x, y);
 		},

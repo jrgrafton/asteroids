@@ -263,7 +263,7 @@ var MissileExplosion =  (function(Entity) {
 	MissileExplosion.prototype = {
 		constructor : MissileExplosion,
 		setShape : function(shape) {
-			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/explosion.png");
+			this.shape = new createjs.Bitmap("../img/explosion.png");
 			this.shape.snapToPixel = true;
 			this.render();
 		},
@@ -496,6 +496,7 @@ var Player = (function(Entity) {
 		// Scale based on canvas size
 		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
+		this.lifeCount = 3;
 
 		this.init();
 	} 
@@ -546,18 +547,18 @@ var Player = (function(Entity) {
 			this.missileCount = 5;
 			this.lastMissileFired = new Date().getTime();
 			this.lastMissileRecharged = new Date().getTime();
-			this.lifeCount = 3;
 
 			// Start invulnerable
 			this.invulerableStartTime = new Date().getTime();
 			this.invulerable = true;
+			this.exploded = false;
 			/********************/
 			/* END: data fields */
 			/********************/
 		},
 		/* Setter function so caching can be setup immediately */
 		setupShape : function() {
-			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/player.png");
+			this.shape = new createjs.Bitmap("../img/player.png");
 			this.shape.regX = WIDTH / 2;
 			this.shape.regY = HEIGHT / 2;
 			this.shape.snapToPixel = true;
@@ -574,11 +575,10 @@ var Player = (function(Entity) {
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Asteroid", "Alien", "Lazer");
-			//console.log("player collides with " + entity.className() + "?");
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		explode : function() {
-			if(this.invulerable) return;
+			if(this.invulerable || this.exploded) return;
 
 			// Add particles
 			var cx  = this.x + (this.vx * (this.width / 2));
@@ -595,13 +595,17 @@ var Player = (function(Entity) {
 			}
 
 
-			// Reset ship
+			// Reset ship after a time
 			if(--this.lifeCount !== 0) {
-				var savedLifeCount = this.lifeCount;
-				this.init();
-				this.lifeCount = savedLifeCount;
-				this.invulerableStartTime = new Date().getTime();
-				this.invulerable = true;
+				this.exploded = true;
+				this.shape.alpha = 0;
+
+				setTimeout(function() {
+					this.init();
+					this.invulerableStartTime = new Date().getTime();
+					this.invulerable = true;
+					this.exploded = false;
+				}.bind(this), 500);
 			}
 		},
 		render : function() {
@@ -613,6 +617,8 @@ var Player = (function(Entity) {
 			this.shape.setBounds(this.x - (WIDTH / 2), this.y - (HEIGHT / 2), WIDTH , HEIGHT);
 		},
 		update : function() {
+			if(this.exploded) return;
+
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
 			this.lastUpdate = new Date().getTime();
 
@@ -866,7 +872,7 @@ var Alien = (function(Entity) {
 	Alien.prototype = {
 		constructor : Alien,
 		setShape : function(shape) {
-			this.shape = new createjs.Bitmap(window.location.origin + window.location.pathname + "/img/alien.png");
+			this.shape = new createjs.Bitmap("../img/alien.png");
 			this.shape.snapToPixel = true;
 			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 			this.shape.alpha = 0;
@@ -1032,6 +1038,7 @@ var Particle = (function(Entity) {
 			this.vy = velocityVectors.vy;
 			this.speed = speed;
 			this.size = size;
+			this.type = type;
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array();
@@ -1043,7 +1050,11 @@ var Particle = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
-			this.shape.rotation = this.rotation;
+
+			// Quick hack to speed up small particles
+			if(this.type === "line") {
+				this.shape.rotation = this.rotation;
+			}
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
