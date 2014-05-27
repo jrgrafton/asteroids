@@ -23,8 +23,9 @@ var HUD = (function() {
 				});
 				this.lastScore = window.spaceRocks.score;
 			}
+
 			if(this.lastLevel !== window.spaceRocks.level) {
-				$("#ui #hud #points #multplier sup").html("x" + window.spaceRocks.level);
+				$("#ui #hud #points #multiplier sup").html("x" + window.spaceRocks.level);
 				this.lastLevel = window.spaceRocks.level;
 			}
 			if(this.lastMissiles !== window.spaceRocks.player.missileCount) {
@@ -53,7 +54,7 @@ var HUD = (function() {
 			}
 		},
 		triggerScoreAnimation : function(score, x, y) {
-			var style = "position:absolute;left:" + x / window.devicePixelRatio + "px;top:" + y / window.devicePixelRatio + "px;font-size:" + (Math.log(score) * 0.7) + "em";
+			var style = "position:absolute;left:" + x / window.devicePixelRatio + "px;top:" + y / window.devicePixelRatio + "px;font-size:" + (Math.log(score / this.lastLevel) * 0.7) + "em";
 
 			var scoreDiv = $("<div class='score fadeInUp animated' style='" + style + "'>" + score + "</div>");
 			$("#ui #score").append(scoreDiv);

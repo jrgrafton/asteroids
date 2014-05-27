@@ -119,7 +119,7 @@ body.in-game #ui #in-game {
 }
 
 #ui #in-game #hud #lives {
-	width: 33%;
+	width: 30%;
 	float: left;
 }
 #ui #in-game #hud #lives .life {
@@ -127,7 +127,7 @@ body.in-game #ui #in-game {
 }
 
 #ui #in-game #hud #points {
-	width: 33%;
+	width: 36%;
 	float: left;
 	color: #cc423b;
 	margin-top: -4px;
@@ -148,7 +148,7 @@ body.in-game #ui #in-game {
 }
 
 #ui #in-game #hud #missiles {
-	width: 33%;
+	width: 34%;
 	float:left;
 }
 

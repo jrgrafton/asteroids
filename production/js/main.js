@@ -330,7 +330,7 @@ var SpaceRocks = (function() {
 				_this.tickEntities();
 
 				// Possibly add alien
-				if(!_this.alienPresent) {
+				if(_this.aliensPresent < _this.level / 2 + 1) {
 					_this.addAlien();
 				}
 				
@@ -348,7 +348,7 @@ var SpaceRocks = (function() {
 		},
 		tickEntities : function() {
 			// Reset entity present flags
-			_this.alienPresent = false;
+			_this.aliensPresent = 0;
 			_this.asteroidPresent = false;
 
 			// Update and render loop
@@ -357,7 +357,7 @@ var SpaceRocks = (function() {
 				var e1 = node.data;
 
 				// Make presence of certain entities
-				if(e1.className() === "Alien") { _this.alienPresent = true; }
+				if(e1.className() === "Alien") { ++_this.aliensPresent; }
 				if(e1.className() === "Asteroid") { _this.asteroidPresent = true; }
 
 				// Update and render entity
@@ -382,7 +382,7 @@ var SpaceRocks = (function() {
 		},
 		addAlien : function() {
 			// Alien has 50% chance of being added every 10 seconds
-			var alienInterval = 1000;
+			var alienInterval = 60 * 10 / _this.level;
 			var alienChance = 0.5;
 
 			if(_this.tickCount % alienInterval === 0) {
@@ -434,8 +434,8 @@ var SpaceRocks = (function() {
 		},
 		// Called by other functions when score should increase
 		addScore : function(points, x, y) {
-			points = Math.round(points);
-			this.score += points * _this.level;
+			points *= _this.level;
+			this.score += (points * _this.level);
 			_this.hud.triggerScoreAnimation(points, x, y);
 		},
 		addStars : function() {
