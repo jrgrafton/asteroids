@@ -165,7 +165,7 @@ var CollisionHandler = (function() {
 	CollisionHandler.prototype = {
 		constructor : CollisionHandler,
 		didCollide : function(e1, e2) {
-			//console.log("[collision] " + e1.className() + " --> " + e2.className());
+			console.log("[collision] " + e1.className() + " --> " + e2.className());
 
 			switch(e1.className()) {
 				case "Asteroid":

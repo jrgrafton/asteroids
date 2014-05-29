@@ -147,9 +147,7 @@ var Asteroid = (function(Entity) {
 				var yDist = (currentPoint.y - nextPoint.y) / 2;
 
 				var dist = Math.abs(currentPoint.x - nextPoint.x) + Math.abs(currentPoint.y - nextPoint.y) / 2;
-
 				shape.graphics.arcTo(currentPoint.x + nextPoint.x >> 1, currentPoint.y + nextPoint.y >> 1,  nextPoint.x,  nextPoint.y,  asteroidRadius / 6);
-
 				currentPoint = nextPoint;
 			}
 
@@ -168,6 +166,7 @@ var Asteroid = (function(Entity) {
 							(this.radius * 2) + 8, 
 							(this.radius * 2) + 8, 
 							window.devicePixelRatio);
+
 			this.shape.snapToPixel = true;
 
 			// To calculate initial bounding box
@@ -784,7 +783,7 @@ var Lazer = (function(Entity) {
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Player", "Missile", "MissileExplosion", "Alien");
-			if(new Date().getTime() - this.startTime < 2000 && entity.className() === "Alien") return false;
+			if(new Date().getTime() - this.startTime < 500 && entity.className() === "Alien") return false;
 
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
@@ -901,7 +900,7 @@ var Alien = (function(Entity) {
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Player", "Missile", "MissileExplosion" , "Lazer");
-			if(new Date().getTime() - this.startTime < 2000 && entity.className() === "Lazer") return false;
+			if(new Date().getTime() - this.startTime < 500 && entity.className() === "Lazer") return false;
 
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
@@ -911,9 +910,6 @@ var Alien = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 		},
 		update : function() {
-			if(this.shape.alpha < 1) {
-				console.log(this.shape.image);
-			}
 			if(this.exploded) return;
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;

@@ -261,6 +261,7 @@ body.game-over #game-over {
 #game-over .overlay .panel-contents .button {
 	margin: 0 auto;
 	margin-bottom: 10%;
+	opacity: 0;
 }
 
 #game-over .overlay .panel-contents  .red-line {
@@ -272,6 +273,7 @@ body.game-over #game-over {
 	text-align: left;
 	margin-top: 10%;
 	padding-left: 10%;
+	opacity: 0;
 }
 
 #game-over .overlay .panel-contents .social .sc-text {

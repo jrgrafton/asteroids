@@ -39,6 +39,7 @@ var SpaceRocks = (function() {
 	function SpaceRocks() {
 		_this = this;
 		_this.tickCount = 0;
+		_this.shouldRestart = false;
 
 		// Setup physics engine
 		_this.physics = new Physics();
@@ -87,13 +88,11 @@ var SpaceRocks = (function() {
 		_this.stage = new createjs.Stage("game");
 		createjs.Touch.enable(_this.stage);
 		_this.stage.enableMouseOver(10);
-		_this.stage.snapToPixelEnabled = true;
-		_this.stage.autoClear = true;
+		_this.stage.snapToPixelEnabled = true;	
 
 		// Initialise game and attach click and touch observers
 		_this.attachObservers();	
 		_this.init();
-		
 	}
 
 	SpaceRocks.prototype = {
@@ -103,12 +102,13 @@ var SpaceRocks = (function() {
 		/***********************************/
 		init : function() {
 			// Show intro screen
+			_this.stage.removeAllChildren();
+			_this.entities = new LinkedList();
+
 			_this.showIntroScreen();
 		},
 		showIntroScreen : function() {
 			$(document.body).addClass("intro");
-			_this.entities = new LinkedList();
-
 			_this.addStars();
 			_this.stage.update();
 
@@ -187,8 +187,8 @@ var SpaceRocks = (function() {
 			$("#game-over .button").click(function() {
 				$(document.body).removeClass("game-over");
 				$("#game-over .overlay").removeClass("animated fadeInDown");
-
-				_this.init();
+				$("#game-over .overlay .social, #game-over .overlay .button").removeClass("animated fadeIn");
+				_this.shouldRestart = true;
 			});
 
 			// Prevent scrolling on page
@@ -299,14 +299,14 @@ var SpaceRocks = (function() {
 		addEntity : function(entity, index) {
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
-			if(index != null) {
+			if(index != null && _this.stage.length > index) {
 				_this.stage.addChildAt(entity.shape, index);
 			} else {
 				_this.stage.addChild(entity.shape);
 			}
 		},
 		addShape : function(shape, index) {
-			if(index != null) {
+			if(index != null && _this.stage.length > index) {
 				_this.stage.addChildAt(shape, index);
 			} else {
 				_this.stage.addChild(shape);
@@ -337,6 +337,13 @@ var SpaceRocks = (function() {
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
+			// Restart requested
+			if(_this.shouldRestart) {
+				_this.shouldRestart = false;
+				_this.init();
+				return;
+			}
+
 			// FPS meter
 			if(DEBUG) {_this.meter.begin();}
 			++_this.tickCount;
@@ -418,7 +425,7 @@ var SpaceRocks = (function() {
 					alien.y = _this.height * Math.random();
 
 					// Add to entity list
-					_this.addEntity(alien, 3);
+					_this.addEntity(alien);
 				}
 			}	
 
@@ -440,13 +447,13 @@ var SpaceRocks = (function() {
 		addAsteroid : function() {
 			var asteroid = new Asteroid();
 			// Set random starting corner
-			asteroid.x = Math.random() * _this.width / 3;
+			asteroid.x = Math.random() * _this.width / 2.5;
 			if(Math.floor(Math.random() * 2) % 2 === 0) {
-				asteroid.x += (_this.width / 3) * 2;
+				asteroid.x += (_this.width / 3.5) * 2;
 			}
-			asteroid.y = Math.random() * _this.height / 3;
+			asteroid.y = Math.random() * _this.height / 2.5;
 			if(Math.floor(Math.random() * 2) % 2 === 0) {
-				asteroid.y += (_this.height / 3) * 2;
+				asteroid.y += (_this.height / 3.5) * 2;
 			}
 			asteroid.setShape(new createjs.Shape());
 
@@ -482,7 +489,26 @@ var SpaceRocks = (function() {
 				$(document.body).removeClass("in-game");
 				$(document.body).addClass("game-over");
 				$("#game-over .overlay").addClass("animated fadeInDown");
+				_this.animateScoreBoard();
 			}
+		},
+		animateScoreBoard : function() {
+			var animateFunction = function() {
+				if(animatedScore > _this.score) {
+					clearInterval(animateScoreInterval);
+					$("#game-over .overlay .social, #game-over .overlay .button").addClass("animated fadeIn");
+				} else {
+					animatedScore += pointsPerUpdate;
+					$("#game-over .overlay .score").html(Math.round(animatedScore));
+				}
+			}
+			var animatedScore = 0;
+			var maxAnimationTime = 1500;
+			var updateInterval = 1000 / 60;
+			var pointsPerUpdate = _this.score / (maxAnimationTime / updateInterval);
+
+			var animateScoreInterval = setInterval(animateFunction, updateInterval);
+			var scoreAnimationStartTime = new Date().getTime();
 		}
 	}
 
