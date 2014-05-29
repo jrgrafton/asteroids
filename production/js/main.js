@@ -191,6 +191,15 @@ var SpaceRocks = (function() {
 				_this.shouldRestart = true;
 			});
 
+			// Post to Facebook button
+			$("#game-over .sc--facebook").click(function() {
+				_this.postToFacebook(_this.score);
+			});
+			// Post to Twitter button
+			$("#game-over .sc--twitter").click(function() {
+				_this.postToTwitter(_this.score);
+			})
+
 			// Prevent scrolling on page
 			document.addEventListener(
 			    "touchstart",
@@ -447,13 +456,13 @@ var SpaceRocks = (function() {
 		addAsteroid : function() {
 			var asteroid = new Asteroid();
 			// Set random starting corner
-			asteroid.x = Math.random() * _this.width / 2.5;
+			asteroid.x = Math.random() * _this.width / 3;
 			if(Math.floor(Math.random() * 2) % 2 === 0) {
-				asteroid.x += (_this.width / 3.5) * 2;
+				asteroid.x += (_this.width / 3) * 2;
 			}
-			asteroid.y = Math.random() * _this.height / 2.5;
+			asteroid.y = Math.random() * _this.height / 3;
 			if(Math.floor(Math.random() * 2) % 2 === 0) {
-				asteroid.y += (_this.height / 3.5) * 2;
+				asteroid.y += (_this.height / 3) * 2;
 			}
 			asteroid.setShape(new createjs.Shape());
 
@@ -486,13 +495,16 @@ var SpaceRocks = (function() {
 		checkGameOver : function() {
 			if($(document.body).hasClass("in-game") && _this.player.isDead() 
 				&& !$(document.body).hasClass("game-over")) {
+				
 				$(document.body).removeClass("in-game");
 				$(document.body).addClass("game-over");
-				$("#game-over .overlay").addClass("animated fadeInDown");
+				$("#game-over .overlay").addClass("animated slideInDown");
 				_this.animateScoreBoard();
 			}
 		},
 		animateScoreBoard : function() {
+			console.log("animate score board");
+
 			var animateFunction = function() {
 				if(animatedScore > _this.score) {
 					clearInterval(animateScoreInterval);
@@ -509,6 +521,29 @@ var SpaceRocks = (function() {
 
 			var animateScoreInterval = setInterval(animateFunction, updateInterval);
 			var scoreAnimationStartTime = new Date().getTime();
+		},
+		postToFacebook : function(score) {
+			FB.ui(
+		      {
+		       method: 'feed',
+		       name: 'Space Rocks',
+		       caption: 'A modern take on an arcade classic',
+		       description: (
+		          'Space Rocks is pretty cool ya\'ll. I just scored ' + score +
+		          '. Try beat it!'
+		       ),
+		       href : window.location.href,
+		       link: window.location.href,
+		       picture: 'https://raw.githubusercontent.com/jrgrafton/asteroids/gh-pages/production/img/app-icon.png',
+			   actions: [ { name: 'via Space Rocks', link : window.location.href}]
+		      },
+		      function(response) {}
+		    );
+		},
+		postToTwitter : function(score) {
+			var msg = 'Space Rocks is pretty cool ya\'ll. I just scored ' + score +
+				'. Try beat it! ' + window.location.href;
+			window.open("https://twitter.com/intent/tweet?source=webclient&text=" + msg, "_blank");
 		}
 	}
 
