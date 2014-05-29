@@ -182,6 +182,8 @@ var CollisionHandler = (function() {
 							}
 						break;
 						case "Player":
+							window.spaceRocks.addScore(10 * (e1.sizeIndex + 1), e2.x, e2.y);
+							e1.explode();
 							e2.explode();
 						break;
 						default:
@@ -219,6 +221,11 @@ var CollisionHandler = (function() {
 								window.spaceRocks.addScore(120, e1.x, e1.y);
 							}
 						break;
+						case "Lazer" :
+							// Explode alien and lazer
+							e1.explode();
+							e2.explode();
+						break
 						default:
 						break;
 					}

@@ -38,8 +38,7 @@ var SpaceRocks = (function() {
 	// Constructor
 	function SpaceRocks() {
 		_this = this;
-		_this.init();
-		_this.attachObservers();
+		_this.tickCount = 0;
 
 		// Setup physics engine
 		_this.physics = new Physics();
@@ -61,6 +60,40 @@ var SpaceRocks = (function() {
 		$(".button").on("touchup", function() {
 			$(this).removeClass("selected");
 		})
+
+		// FPS tracker
+		if(DEBUG) {
+			_this.meter = new Stats();
+			_this.meter.setMode(0);
+			_this.meter.domElement.style.position = 'absolute';
+			_this.meter.domElement.style.left = '0px';
+			_this.meter.domElement.style.top = '0px';
+			document.body.appendChild( _this.meter.domElement);
+		}
+
+		// Set dimensions
+		_this.canvas = document.getElementById("game");
+		_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
+		_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
+		_this.canvas.width = _this.width;
+		_this.canvas.height = _this.height;
+		_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
+		_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
+		$(document.body).css({
+			"width" : _this.canvas.style.width
+		})
+
+		// Create stage and enable touch
+		_this.stage = new createjs.Stage("game");
+		createjs.Touch.enable(_this.stage);
+		_this.stage.enableMouseOver(10);
+		_this.stage.snapToPixelEnabled = true;
+		_this.stage.autoClear = true;
+
+		// Initialise game and attach click and touch observers
+		_this.attachObservers();	
+		_this.init();
+		
 	}
 
 	SpaceRocks.prototype = {
@@ -69,40 +102,13 @@ var SpaceRocks = (function() {
 		/** ------ Setup functions ------ **/
 		/***********************************/
 		init : function() {
-			// FPS tracker
-			if(DEBUG) {
-				_this.meter = new Stats();
-				_this.meter.setMode(0);
-				_this.meter.domElement.style.position = 'absolute';
-				_this.meter.domElement.style.left = '0px';
-				_this.meter.domElement.style.top = '0px';
-				document.body.appendChild( _this.meter.domElement);
-			}
-
-			// Set dimensions
-			_this.canvas = document.getElementById("game");
-			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
-			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
-			_this.canvas.width = _this.width;
-			_this.canvas.height = _this.height;
-			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
-			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
-			$(document.body).css({
-				"width" : _this.canvas.style.width
-			})
-
-			// Create stage and enable touch
-			_this.stage = new createjs.Stage("game");
-			createjs.Touch.enable(_this.stage);
-			_this.stage.enableMouseOver(10);
-			_this.stage.snapToPixelEnabled = true;
-
 			// Show intro screen
 			_this.showIntroScreen();
 		},
 		showIntroScreen : function() {
 			$(document.body).addClass("intro");
 			_this.entities = new LinkedList();
+
 			_this.addStars();
 			_this.stage.update();
 
@@ -111,28 +117,14 @@ var SpaceRocks = (function() {
 				$("h1.light").addClass("fadeInUp animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 					$("h1.extra-bold").addClass("bounceIn animated");
 					$("#intro .button").addClass("fadeIn animated");
-					$("#intro .button").click(function() {
-						// Disable touch events for intro screen
-						$("#intro").addClass("no-pointer-events");
-						$(".line.red").addClass("slideOutRight");
-						$("h1.light, h1.extra-bold, #intro .button").addClass("fadeOut").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-							$(document.body).removeClass("intro game-over").addClass("in-game");
-							$("#ui #in-game #hud").addClass("animated fadeInDown");
-						});
-
-						_this.startGame();
-					});
 				});
 			});
 		},
 		startGame : function() {
 			// Reset all dynamic aspects of the game
 			_this.score = 0;
-			_this.tickCount = 0;
 
 			// Setup entity array
-			_this.entities = new LinkedList();
-
 			_this.setupEntities();
 		
 			// Current level
@@ -174,6 +166,30 @@ var SpaceRocks = (function() {
 			_this.mouseDown = null;
 			_this.mouseUp = null;
 			_this.mouseMove = null;	
+
+			// Intro button
+			$("#intro .button").click(function() {
+				// Disable touch events for intro screen
+				$("#intro").addClass("no-pointer-events");
+				$(".line.red").addClass("slideOutRight");
+				$("h1.light, h1.extra-bold, #intro .button").addClass("fadeOut").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+					$(".line.red").removeClass("slideOutRight");
+					$("h1.light, h1.extra-bold, #intro .button").removeClass("fadeOut");
+					$("#ui #in-game #hud").addClass("animated fadeInDown");
+					$("#intro").removeClass("no-pointer-events");
+					$(document.body).removeClass("intro").addClass("in-game");
+				});
+
+				_this.startGame();
+			});
+
+			// Game over button
+			$("#game-over .button").click(function() {
+				$(document.body).removeClass("game-over");
+				$("#game-over .overlay").removeClass("animated fadeInDown");
+
+				_this.init();
+			});
 
 			// Prevent scrolling on page
 			document.addEventListener(
@@ -304,47 +320,54 @@ var SpaceRocks = (function() {
 		},
 		// Needed for when alien is trying to fire at player
 		getPlayerLocaton : function() {
-			return { 
-				x : _this.player.x, 
-				y : _this.player.y 
-			};
+			if(!_this.player.isDead()) {
+				return { 
+					x : _this.player.x, 
+					y : _this.player.y 
+				};
+			} else {
+				// GHOSTS!!
+				return {
+					x : Math.random() * _this.width,
+					y : Math.random() * _this.height
+				}
+			}
 		},
 		/***************************************/
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
-			// Check for game over before proceeding
-			if(!_this.checkGameOver()) {
-				// FPS meter
-				if(DEBUG) {_this.meter.begin();}
-				++_this.tickCount;
+			// FPS meter
+			if(DEBUG) {_this.meter.begin();}
+			++_this.tickCount;
 
+			if(!_this.player.isDead()) {
 				// Update and render navigation
 				_this.updateNavigation();
 				_this.renderNavigation();
 
 				// Update HUD 
 				_this.hud.update();
-
-				// Update and render loop
-				_this.tickEntities();
-
-				// Possibly add alien
-				if(_this.aliensPresent < _this.level / 2 + 1) {
-					_this.addAlien();
-				}
-				
-				// Check remaining asteroids
-				_this.checkRemainingAsteroids();
-
-				// Draw everything to stage
-				_this.stage.update();
-				if(DEBUG) {_this.meter.end();}
-			} else {
-				// Stop ticking and show game over dialogue
-				alert("Game over");
-				window.location.reload();
 			}
+
+			// Update and render
+			_this.tickEntities();
+			_this.stage.update();
+
+			// Check for game over
+			_this.checkGameOver();
+
+			// Possibly add alien
+			if(_this.aliensPresent < Math.floor(_this.level / 2 + 1) || _this.player.isDead()) {
+				_this.addAlien();
+			}
+
+			// Check for end level / game conditions
+			if(!_this.player.isDead()) {
+				_this.checkRemainingAsteroids();
+			}
+
+			if(DEBUG) {_this.meter.end();}
 		},
 		tickEntities : function() {
 			// Reset entity present flags
@@ -393,11 +416,9 @@ var SpaceRocks = (function() {
 					// Set random starting location along left side of screen
 					alien.x = 0;
 					alien.y = _this.height * Math.random();
-					alien.setShape(new createjs.Shape());
 
 					// Add to entity list
-					_this.addEntity(alien, 2);
-					_this.alienPresent = true;
+					_this.addEntity(alien, 3);
 				}
 			}	
 
@@ -456,7 +477,12 @@ var SpaceRocks = (function() {
 			_this.addShape(starsShape, 0);
 		},
 		checkGameOver : function() {
-			return _this.player.lifeCount === 0;
+			if($(document.body).hasClass("in-game") && _this.player.isDead() 
+				&& !$(document.body).hasClass("game-over")) {
+				$(document.body).removeClass("in-game");
+				$(document.body).addClass("game-over");
+				$("#game-over .overlay").addClass("animated fadeInDown");
+			}
 		}
 	}
 
@@ -465,5 +491,4 @@ var SpaceRocks = (function() {
 
 window.onload = function() {
 	window.spaceRocks = new SpaceRocks(); 
-	//window.spaceRocks.startGame();
 }

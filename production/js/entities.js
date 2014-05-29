@@ -45,7 +45,7 @@ var Entity = (function() {
 var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = (0.025 * window.devicePixelRatio); // Pixels per ms (asteroids have constant speed)
+	var SPEED = 0.025 * window.devicePixelRatio; // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
@@ -193,7 +193,7 @@ var Asteroid = (function(Entity) {
 					asteroid.setShape(new createjs.Shape());
 
 					// Add to entity list
-					window.spaceRocks.addEntity(asteroid);
+					window.spaceRocks.addEntity(asteroid, 3);
 				}
 			}
 
@@ -496,7 +496,7 @@ var Player = (function(Entity) {
 		// Scale based on canvas size
 		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
-		this.lifeCount = 3;
+		this.lifeCount = 1;
 
 		this.init();
 	} 
@@ -726,6 +726,9 @@ var Player = (function(Entity) {
 					}
 				}
 			}
+		},
+		isDead : function() {
+			return this.lifeCount < 1;
 		}
 	}
 
@@ -760,6 +763,7 @@ var Lazer = (function(Entity) {
 		// State management
 		this.exploding = false;
 		this.exploded = false;
+		this.startTime = new Date().getTime();
 	}
 
 	Lazer.prototype = {
@@ -779,7 +783,9 @@ var Lazer = (function(Entity) {
 			return Physics.hitBoxTypes.POINT
 		},
 		canCollideWidth : function(entity) {
-			var collidesWith = new Array("Player", "Missile", "MissileExplosion");
+			var collidesWith = new Array("Player", "Missile", "MissileExplosion", "Alien");
+			if(new Date().getTime() - this.startTime < 2000 && entity.className() === "Alien") return false;
+
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		render : function() {
@@ -867,22 +873,21 @@ var Alien = (function(Entity) {
 		this.lastUpdate = new Date().getTime();
 		this.updateHeading();
 		this.lastLazer = new Date().getTime();
+		this.startTime = new Date().getTime();
+
+		// Load image
+		this.shape = new createjs.Bitmap("../img/alien.png");
+		this.shape.snapToPixel = true;
+		this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
+		this.shape.alpha = 0;
+
+		createjs.Tween.get(this.shape).to({
+	        alpha: 1
+	    }, 2000)
 	}
 
 	Alien.prototype = {
 		constructor : Alien,
-		setShape : function(shape) {
-			this.shape = new createjs.Bitmap("../img/alien.png");
-			this.shape.snapToPixel = true;
-			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
-			this.shape.alpha = 0;
-
-			createjs.Tween.get(this.shape).to({
-		        alpha: 1
-		    }, 2000).call(function() {
-		        window.spaceRocks.removeShape(this.animationCanvas, 1);
-		    });
-		},
 		updateHeading : function() {
 			this.setHeading(this.maxX * Math.random(), this.maxY * Math.random());
 			this.lastHeadingUpdate = new Date().getTime();
@@ -895,7 +900,9 @@ var Alien = (function(Entity) {
 			return Physics.hitBoxTypes.RECTANGLE;
 		},
 		canCollideWidth : function(entity) {
-			var collidesWith = new Array("Player", "Missile", "MissileExplosion");
+			var collidesWith = new Array("Player", "Missile", "MissileExplosion" , "Lazer");
+			if(new Date().getTime() - this.startTime < 2000 && entity.className() === "Lazer") return false;
+
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
 		render : function() {
@@ -904,6 +911,9 @@ var Alien = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 		},
 		update : function() {
+			if(this.shape.alpha < 1) {
+				console.log(this.shape.image);
+			}
 			if(this.exploded) return;
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;

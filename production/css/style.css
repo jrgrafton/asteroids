@@ -45,16 +45,21 @@ h1 {
 	background-size: 174px 49px;
 	line-height: 44px;
 	font-size: 1.66em;
+	text-align: center;
 }
 
-.button.selected {
+.button:active, .button.selected {
 	background-image: url('../img/button-on.png');
 }
 .button:hover {
-	cursor: pointer;;
+	cursor: pointer;
+	background-image: url('../img/button-on.png');
 }
 .no-pointer-events {
 	pointer-events: none;
+}
+.rounded {
+	border-radius: 10px;
 }
 /***************************/
 /**** UI styles - intro ****/
@@ -71,6 +76,7 @@ body.intro #intro {
 	width: 100%;
 	margin-top: 20%;
 	display: none;
+	poin
 }
 
 #intro .red.line {
@@ -185,4 +191,94 @@ body.in-game #ui #in-game {
     1px -1px 0 #bce9ff,
     -1px 1px 0 #bce9ff,
     1px 1px 0 #bce9ff; 
+}
+
+
+/*******************************/
+/**** UI styles - game over ****/
+/*******************************/
+body.game-over #game-over {
+	display: block;
+}
+
+#game-over {
+	display: none;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+}
+
+#game-over .background {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	background: black;
+	opacity: 0.6;
+}
+
+#game-over .overlay {
+	width: 250px;
+	height: 325px;
+	margin: 0 auto;
+	text-align: center;
+	padding-top: 50%;
+	margin-top: -50px;
+}
+
+#game-over .overlay .panel-header {
+	border: 2px white solid;
+	height: 50px;
+	width: 80%;
+	margin-left: 10%;
+	margin: 0 auto;
+	font-size: 2.5em;
+	line-height: 42px;
+	font-weight: bold;
+	position: relative;
+	background-color: black;
+	z-index: 2;
+}
+
+#game-over .overlay .panel-contents  {
+	border: 5px solid #cc423b;
+	margin-top: -28px;
+	padding: 5%;
+	background: black;
+	position: relative;
+	z-index: 1;
+}
+
+#game-over .overlay .panel-contents .score {
+	font-weight: 900;
+	font-size: 5.11em;
+	margin: 0.2em 0em;
+}
+
+#game-over .overlay .panel-contents .button {
+	margin: 0 auto;
+	margin-bottom: 10%;
+}
+
+#game-over .overlay .panel-contents  .red-line {
+	height: 2px;
+	background-color: #cc423b;
+}
+
+#game-over .overlay .panel-contents .social {
+	text-align: left;
+	margin-top: 10%;
+	padding-left: 10%;
+}
+
+#game-over .overlay .panel-contents .social .sc-text {
+	font-size: 1em;
+}
+
+#game-over .overlay .panel-contents .social .sc-btn {
+	font-size: 1em;
+		width: 90%;
 }
