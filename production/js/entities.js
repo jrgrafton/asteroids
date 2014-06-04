@@ -383,6 +383,8 @@ var Missile = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
+
+			this.shape.setBounds(this.x, this.y, 1, 1);
 		},
 		update : function() {
 			if(this.exploded) return;
@@ -495,7 +497,7 @@ var Player = (function(Entity) {
 		// Scale based on canvas size
 		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
-		this.lifeCount = 1;
+		this.lifeCount = 3;
 
 		this.init();
 	} 
@@ -787,7 +789,7 @@ var Lazer = (function(Entity) {
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Player", "Missile", "MissileExplosion", "Alien");
-			if(new Date().getTime() - this.startTime < 500 && entity.className() === "Alien") return false;
+			if(new Date().getTime() - this.startTime < 750 && entity.className() === "Alien") return false;
 
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},
@@ -903,7 +905,7 @@ var Alien = (function(Entity) {
 		},
 		canCollideWidth : function(entity) {
 			var collidesWith = new Array("Player", "Missile", "MissileExplosion" , "Lazer");
-			if(new Date().getTime() - this.startTime < 500 && entity.className() === "Lazer") return false;
+			if(new Date().getTime() - this.startTime < 750 && entity.className() === "Lazer") return false;
 
 			return collidesWith.indexOf(entity.className()) !== -1;
 		},

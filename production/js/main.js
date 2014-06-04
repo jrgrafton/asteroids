@@ -238,9 +238,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mousedown", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.x * window.devicePixelRatio,
-			 		y : e.y * window.devicePixelRatio
-
+			 		x : e.clientX * window.devicePixelRatio,
+			 		y : e.clientY * window.devicePixelRatio
 			 	}
 			 	_this.mouseDown = overridenEvent;
 			});
@@ -248,8 +247,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mousemove", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.x * window.devicePixelRatio,
-			 		y : e.y * window.devicePixelRatio
+			 		x : e.clientX * window.devicePixelRatio,
+			 		y : e.clientY * window.devicePixelRatio
 
 			 	}
 				_this.mouseMove = overridenEvent;
@@ -258,8 +257,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mouseup", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.x * window.devicePixelRatio,
-			 		y : e.y * window.devicePixelRatio
+			 		x : e.clientX * window.devicePixelRatio,
+			 		y : e.clientY * window.devicePixelRatio
 
 			 	}
 			 	_this.mouseUp = overridenEvent;
