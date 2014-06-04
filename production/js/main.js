@@ -101,10 +101,14 @@ var SpaceRocks = (function() {
 		/** ------ Setup functions ------ **/
 		/***********************************/
 		init : function() {
-			// Show intro screen
+			// Reset state
 			_this.stage.removeAllChildren();
 			_this.entities = new LinkedList();
+			_this.mouseDown = null;
+			_this.mouseUp = null;
+			_this.mouseMove = null;	
 
+			// Show intro screen
 			_this.showIntroScreen();
 		},
 		showIntroScreen : function() {
@@ -130,6 +134,7 @@ var SpaceRocks = (function() {
 			// Current level
 			_this.level = 1;
 
+			// Setup target FPS
 			createjs.Ticker.setFPS(TARGET_FPS);
 			createjs.Ticker.addEventListener("tick", _this.tick);
 		},
@@ -162,11 +167,6 @@ var SpaceRocks = (function() {
 			_this.addInitialAsteroids();
 		},
 		attachObservers : function() {
-			// Local vars
-			_this.mouseDown = null;
-			_this.mouseUp = null;
-			_this.mouseMove = null;	
-
 			// Intro button
 			$("#intro .button").click(function() {
 				// Disable touch events for intro screen

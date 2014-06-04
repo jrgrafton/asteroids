@@ -24,8 +24,8 @@ var Entity = (function() {
 		/* Physics */
 		getDimensions : function() { 
 			return { 
-				x : this.x,
-				y : this.y,
+				x : this.shape.getBounds().x || this.x,
+				y : this.shape.getBounds().y || this.y,
 				width : this.shape.getBounds().width,
 				height : this.shape.getBounds().height,
 				points : this.points || null,
@@ -264,6 +264,8 @@ var MissileExplosion =  (function(Entity) {
 		setShape : function(shape) {
 			this.shape = new createjs.Bitmap("../img/explosion.png");
 			this.shape.snapToPixel = true;
+			
+			// To calculate initial bounding box
 			this.render();
 		},
 		getHitBoxType : function() {
@@ -366,7 +368,6 @@ var Missile = (function(Entity) {
 
 			// Add shape to stage for animations
 			this.animationCanvas = new createjs.Shape();
-			//window.spaceRocks.addShape(this.animationCanvas, 1);
 		},
 		setHeading : function(xHeading, yHeading) {
 			this.xHeading = xHeading;
@@ -382,7 +383,6 @@ var Missile = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
-			this.shape.setBounds(this.x, this.y, SIZE * this.shape.regX, SIZE * this.shape.regY);
 		},
 		update : function() {
 			if(this.exploded) return;
@@ -561,6 +561,9 @@ var Player = (function(Entity) {
 			this.shape.regX = WIDTH / 2;
 			this.shape.regY = HEIGHT / 2;
 			this.shape.snapToPixel = true;
+
+			// To calculate initial bounding box
+			this.render();
 		},
 		setHeading : function(x, y) {
 			this.xHeading = x;
@@ -772,6 +775,7 @@ var Lazer = (function(Entity) {
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
 			this.shape.snapToPixel = true;
+
 			this.shape.setBounds(this.x, this.y, 1, 1);
 		},
 		setHeading : function(xHeading, yHeading) {
@@ -791,7 +795,6 @@ var Lazer = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.setBounds(this.x, this.y, 1, 1);
-
 			this.shape.graphics.setStrokeStyle(2).beginStroke("#00dd53").moveTo(0, 0).lineTo(this.vx * 5 * window.devicePixelRatio, this.vy * 5 * window.devicePixelRatio).endStroke();
 		},
 		update : function() {
@@ -1023,8 +1026,6 @@ var Particle = (function(Entity) {
 		init : function(location, color, velocityVectors, speed, size, type) {
 			this.shape = new createjs.Shape();
 			size *= window.devicePixelRatio; // Faster than scaling up
-			this.regX = size / 2;
-			this.regY = size / 2;
 			this.shape.snapToPixel = true;
 
 			switch(type) {
