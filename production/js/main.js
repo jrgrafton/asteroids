@@ -305,7 +305,13 @@ var SpaceRocks = (function() {
 			navigationLine.graphics.clear().setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#15558b").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
 		addEntity : function(entity, index) {
-			if(entity.className() === "Particle") return;
+			//if(entity.className() === "Particle") return;
+
+			// Ensure everuthing is a Bitmap for WebGL compatibility
+			/* var shape = entity.shape;
+			if(shape.graphics != null) {
+				shape = new createjs.Bitmap(shape.cacheCanvas);
+			}*/
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
 			if(index != null && _this.stage.length > index) {
@@ -315,6 +321,11 @@ var SpaceRocks = (function() {
 			}
 		},
 		addShape : function(shape, index) {
+			// Ensure everuthing is a Bitmap for WebGL compatibility
+			if(shape.graphics != null) {
+				shape = new createjs.Bitmap(shape.cacheCanvas);
+			}			
+
 			if(index != null && _this.stage.length > index) {
 				_this.stage.addChildAt(shape, index);
 			} else {
@@ -491,6 +502,7 @@ var SpaceRocks = (function() {
 
 				starsShape.graphics.beginFill(color).drawRect(x, y, size, size);
 			}
+			starsShape.cache(0, 0, _this.width, _this.height);
 
 			_this.addShape(starsShape, 0);
 		},

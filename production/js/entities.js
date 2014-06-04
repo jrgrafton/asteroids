@@ -787,7 +787,7 @@ var Lazer = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.setBounds(this.x, this.y, 1, 1);
-			this.shape.graphics.setStrokeStyle(2).beginStroke("#00dd53").moveTo(0, 0).lineTo(this.vx * 5 * window.devicePixelRatio, this.vy * 5 * window.devicePixelRatio).endStroke();
+			
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
