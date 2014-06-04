@@ -196,6 +196,9 @@ body.in-game #ui #in-game {
     1px 1px 0 #bce9ff; 
 }
 
+#ui .score.inactive {
+	opacity: 0;
+}
 
 /*******************************/
 /**** UI styles - game over ****/

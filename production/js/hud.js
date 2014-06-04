@@ -11,11 +11,10 @@ var HUD = (function() {
 		constructor : HUD,
 		init : function() {
 			// Remove any previous scores
-			$("#ui #score").html("");
+			$("#ui #score .score").addClass("inactive").html("");
 		},
 		update : function() {
 			if(this.lastScore !== window.spaceRocks.score) {
-				console.log("update score");
 				$("#ui #hud #points #count").html("" + window.spaceRocks.score);
 				$("#ui #hud #points-container #count").addClass("pulse animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 					$(this).removeClass("pulse animated");
@@ -53,13 +52,25 @@ var HUD = (function() {
 			}
 		},
 		triggerScoreAnimation : function(score, x, y) {
-			var style = "position:absolute;left:" + x / window.devicePixelRatio + "px;top:" + y / window.devicePixelRatio + "px;font-size:" + (Math.log(score / this.lastLevel) * 0.7) + "em";
+			// Find the next available score node
+			var availableNodes = $("#ui #score .score.inactive");
+			if(availableNodes.length === 0) return;
 
-			var scoreDiv = $("<div class='score fadeInUp animated' style='" + style + "'>" + score + "</div>");
-			$("#ui #score").append(scoreDiv);
-			scoreDiv.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-				scoreDiv.removeClass("fadeInUp").addClass("fadeOut").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-					scoreDiv.remove();
+			var scoreNode = $(availableNodes[0]);
+			scoreNode.css({
+				"position" : "absolute",
+				"left" : x / window.devicePixelRatio,
+				"top" : y / window.devicePixelRatio,
+				"font-size" : (Math.log(score / this.lastLevel) * 0.7) + "em"
+			})
+			scoreNode.html(score);
+
+			// Add animations
+			scoreNode.addClass("fadeInUp animated").removeClass("inactive");
+			scoreNode.one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+				scoreNode.removeClass("fadeInUp").addClass("fadeOut").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+					// Reset node state allowing it to be reused
+					scoreNode.removeClass("animated fadeOut").addClass("inactive");
 				});
 			});
 		}

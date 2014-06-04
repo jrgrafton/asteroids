@@ -33,7 +33,7 @@ var SpaceRocks = (function() {
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	var INITIAL_ASTEROID_COUNT = 2;
 
-	var DEBUG = false;
+	var DEBUG = true;
 
 	// Constructor
 	function SpaceRocks() {
@@ -305,6 +305,7 @@ var SpaceRocks = (function() {
 			navigationLine.graphics.clear().setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#15558b").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
 		addEntity : function(entity, index) {
+			if(entity.className() === "Particle") return;
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
 			if(index != null && _this.stage.length > index) {

@@ -365,9 +365,6 @@ var Missile = (function(Entity) {
 			this.shape.cache(-SIZE, -SIZE, SIZE * 2, SIZE * 2, window.devicePixelRatio);
 			this.shape.snapToPixel = true;
 			this.shape.setBounds(this.x, this.y, 1, 1);
-
-			// Add shape to stage for animations
-			this.animationCanvas = new createjs.Shape();
 		},
 		setHeading : function(xHeading, yHeading) {
 			this.xHeading = xHeading;
@@ -437,13 +434,6 @@ var Missile = (function(Entity) {
 			missileExplosion.y = this.y;
 			missileExplosion.explosionRadius *= this.explosionSizeCoefficient;
 			window.spaceRocks.addEntity(missileExplosion, 1);
-
-			// Fade out animation canvas
-		    createjs.Tween.get(this.animationCanvas).to({
-		        alpha: 0
-		    }, 2000).call(function() {
-		        window.spaceRocks.removeShape(this.animationCanvas, 1);
-		    });
 
 			// Spawn another two missiles
 			if(this.isClusterMissile) {
