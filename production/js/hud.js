@@ -1,5 +1,5 @@
 /**********************/
-/** ------ UI ------ **/
+/** ------ HUD ------ **/
 /**********************/
 var HUD = (function() {
 	function HUD() {
@@ -10,13 +10,12 @@ var HUD = (function() {
 	HUD.prototype = {
 		constructor : HUD,
 		init : function() {
-			this.lastScore = 0;
-			this.lastLevel = 1;
-			this.lastMissiles = window.spaceRocks.player.missileCount;
-			this.lastLives = window.spaceRocks.player.lifeCount;
+			// Remove any previous scores
+			$("#ui #score").html("");
 		},
 		update : function() {
 			if(this.lastScore !== window.spaceRocks.score) {
+				console.log("update score");
 				$("#ui #hud #points #count").html("" + window.spaceRocks.score);
 				$("#ui #hud #points-container #count").addClass("pulse animated").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 					$(this).removeClass("pulse animated");

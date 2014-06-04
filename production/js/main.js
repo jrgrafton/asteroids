@@ -471,9 +471,11 @@ var SpaceRocks = (function() {
 		},
 		// Called by other functions when score should increase
 		addScore : function(points, x, y) {
-			points *= _this.level;
-			this.score += (points * _this.level);
-			_this.hud.triggerScoreAnimation(points, x, y);
+			if(!_this.player.isDead()) {
+				points *= _this.level;
+				this.score += (points * _this.level);
+				_this.hud.triggerScoreAnimation(points, x, y);
+			}
 		},
 		addStars : function() {
 			var particleCount = 200;
@@ -499,19 +501,23 @@ var SpaceRocks = (function() {
 				$(document.body).removeClass("in-game");
 				$(document.body).addClass("game-over");
 				$("#game-over .overlay").addClass("animated slideInDown");
-				_this.animateScoreBoard();
+
+				if(_this.score !== 0) {
+					_this.animateScoreBoard();
+				} else {
+					$("#game-over .overlay .social, #game-over .overlay .button").addClass("animated fadeIn");
+				}
 			}
 		},
 		animateScoreBoard : function() {
-			console.log("animate score board");
-
 			var animateFunction = function() {
 				if(animatedScore > _this.score) {
 					clearInterval(animateScoreInterval);
+					$("#game-over .overlay .score").html(_this.score);
 					$("#game-over .overlay .social, #game-over .overlay .button").addClass("animated fadeIn");
 				} else {
 					animatedScore += pointsPerUpdate;
-					$("#game-over .overlay .score").html(Math.round(animatedScore));
+					$("#game-over .overlay .score").html(Math.floor(animatedScore));
 				}
 			}
 			var animatedScore = 0;

@@ -24,8 +24,8 @@ var Entity = (function() {
 		/* Physics */
 		getDimensions : function() { 
 			return { 
-				x : this.shape.getBounds().x,
-				y : this.shape.getBounds().y,
+				x : this.x,
+				y : this.y,
 				width : this.shape.getBounds().width,
 				height : this.shape.getBounds().height,
 				points : this.points || null,

@@ -3,7 +3,7 @@
 /***************************/
 // @TODO - swap phsyics library for one that can do concave polygons
 // to improve Player vs Asteroid hit accuracy
-window.Physics = (function() {
+var Physics = (function() {
 	_this = null;
 
 	function Physics() {
