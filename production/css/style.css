@@ -2,8 +2,14 @@
 /**** Global styles ****/
 /***********************/
 @import url("fonts.css");
+html {
+	width: 100%;
+	height: 100%;
+	background: black;
+
+}
 html, body {
-	margin: 0px;
+	margin: 0 auto;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -17,9 +23,15 @@ html, body {
 	overflow: hidden;
 	position: relative;
 }
-
+body {
+	margin-top: 8%;
+}
 canvas {
 	background: black;
+	box-sizing:border-box;
+	-moz-box-sizing:border-box; /* Firefox 28 and earlier*/
+	border: 2px solid #444;
+	opacity: 0;
 }
 
 h1 {
@@ -79,7 +91,7 @@ body.intro #intro {
 	width: 100%;
 	margin-top: 20%;
 	display: none;
-	poin
+	z-index: 2;
 }
 
 #intro .red.line {
@@ -107,13 +119,14 @@ body.intro #intro {
 /*****************************/
 /**** UI styles - in game ****/
 /*****************************/
+body.in-game #ui #in-game {
+	display: block;
+}
+
 #ui #in-game {
 	position: relative;
 	display: none;
-}
-
-body.in-game #ui #in-game {
-	display: block;
+	z-index: 2;
 }
 
 #ui #in-game #hud {
@@ -214,6 +227,7 @@ body.game-over #game-over {
 	left: 0px;
 	width: 100%;
 	height: 100%;
+	z-index: 2;
 }
 
 #game-over .background {

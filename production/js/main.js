@@ -82,7 +82,9 @@ var SpaceRocks = (function() {
 		_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
 		$(document.body).css({
 			"width" : _this.canvas.style.width
-		})
+		});
+
+		$(_this.canvas).addClass("animated fadeIn");
 
 		// Create stage and enable touch
 		_this.stage = new createjs.Stage("game");
@@ -240,8 +242,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mousedown", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.clientX * window.devicePixelRatio,
-			 		y : e.clientY * window.devicePixelRatio
+			 		x : e.layerX * window.devicePixelRatio,
+			 		y : e.layerY * window.devicePixelRatio
 			 	}
 			 	_this.mouseDown = overridenEvent;
 			});
@@ -249,8 +251,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mousemove", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.clientX * window.devicePixelRatio,
-			 		y : e.clientY * window.devicePixelRatio
+			 		x : e.layerX * window.devicePixelRatio,
+			 		y : e.layerY * window.devicePixelRatio
 
 			 	}
 				_this.mouseMove = overridenEvent;
@@ -259,8 +261,8 @@ var SpaceRocks = (function() {
 			_this.canvas.addEventListener("mouseup", function(e) {
 				// Retina displays do not return correct relative coordinates
 			 	var overridenEvent = {
-			 		x : e.clientX * window.devicePixelRatio,
-			 		y : e.clientY * window.devicePixelRatio
+			 		x : e.layerX * window.devicePixelRatio,
+			 		y : e.layerY * window.devicePixelRatio
 
 			 	}
 			 	_this.mouseUp = overridenEvent;
@@ -309,11 +311,6 @@ var SpaceRocks = (function() {
 		addEntity : function(entity, index) {
 			//if(entity.className() === "Particle") return;
 
-			// Ensure everuthing is a Bitmap for WebGL compatibility
-			/* var shape = entity.shape;
-			if(shape.graphics != null) {
-				shape = new createjs.Bitmap(shape.cacheCanvas);
-			}*/
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
 			if(index != null && _this.stage.length > index) {
