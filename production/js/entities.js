@@ -263,12 +263,12 @@ var MissileExplosion =  (function(Entity) {
 		constructor : MissileExplosion,
 		setupShape : function(callback) {
 			var img = new Image();
-			img.src = "../img/explosion.png";
+			img.src = window.location.origin + window.location.pathname + "/img/explosion.png";
 			img.onload = function(e) {
 				// Load image
 				this.shape = new createjs.Bitmap(e.target);
 				this.shape.snapToPixel = true;
-				this.shape.setBounds(this.x, this.y, 1, 1);
+				this.shape.setBounds(this.x, this.y, 1, 1);	
 
 				callback();
 			}.bind(this);
@@ -556,7 +556,7 @@ var Player = (function(Entity) {
 		/* Setter function so caching can be setup immediately */
 		setupShape : function(callback) {
 			var img = new Image();
-			img.src = "../img/player.png";
+			img.src = window.location.origin + window.location.pathname + "/img/player.png";
 			img.onload = function(e) {
 				this.shape = new createjs.Bitmap(e.target);
 				this.shape.regX = WIDTH / 2;
@@ -886,7 +886,7 @@ var Alien = (function(Entity) {
 		constructor : Alien,
 		setupShape : function(callback) {
 			var img = new Image();
-			img.src = "../img/alien.png";
+			img.src = window.location.origin + window.location.pathname + "/img/alien.png";
 			img.onload = function(e) {
 				// Load image
 				this.shape = new createjs.Bitmap(e.target);
