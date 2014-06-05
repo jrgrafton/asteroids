@@ -155,16 +155,16 @@ var SpaceRocks = (function() {
 
 			// Create player
 			_this.player = new Player(_this);
-			_this.player.setupShape();
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
-			_this.addEntity(_this.player, 2);
-
-			// Create HUD
-			_this.hud = new HUD(_this, _this.player);
-
-			// Add initial entities
-			_this.addInitialAsteroids();
+			_this.player.setupShape(function() {
+				// Add player entity
+				_this.addEntity(_this.player, 2);
+				// Create HUD
+				_this.hud = new HUD(_this, _this.player);
+				// Add initial entities
+				_this.addInitialAsteroids();
+			});
 		},
 		attachObservers : function() {
 			// Intro button
@@ -444,8 +444,10 @@ var SpaceRocks = (function() {
 					alien.x = 0;
 					alien.y = _this.height * Math.random();
 
-					// Add to entity list
-					_this.addEntity(alien);
+					alien.setupShape(function(){
+						// Add to entity list only after shape has been setup
+						_this.addEntity(alien);
+					});
 				}
 			}	
 

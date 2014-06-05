@@ -261,12 +261,17 @@ var MissileExplosion =  (function(Entity) {
 
 	MissileExplosion.prototype = {
 		constructor : MissileExplosion,
-		setShape : function(shape) {
-			this.shape = new createjs.Bitmap("../img/explosion.png");
-			this.shape.snapToPixel = true;
-			
-			// To calculate initial bounding box
-			this.render();
+		setupShape : function(callback) {
+			var img = new Image();
+			img.src = "../img/explosion.png";
+			img.onload = function(e) {
+				// Load image
+				this.shape = new createjs.Bitmap(e.target);
+				this.shape.snapToPixel = true;
+				this.shape.setBounds(this.x, this.y, 1, 1);
+
+				callback();
+			}.bind(this);
 		},
 		getHitBoxType : function() {
 			return Physics.hitBoxTypes.CIRCLE
@@ -427,13 +432,14 @@ var Missile = (function(Entity) {
 		},
 		explode : function() {
 			// Add explosion object
-			var shape = new createjs.Shape();
 			var missileExplosion = new MissileExplosion();
-			missileExplosion.setShape(shape);
 			missileExplosion.x = this.x;
 			missileExplosion.y = this.y;
 			missileExplosion.explosionRadius *= this.explosionSizeCoefficient;
-			window.spaceRocks.addEntity(missileExplosion, 1);
+			missileExplosion.setupShape(function() {
+				// Add entity once shape has been setup
+				window.spaceRocks.addEntity(missileExplosion, 1);
+			});
 
 			// Spawn another two missiles
 			if(this.isClusterMissile) {
@@ -548,14 +554,19 @@ var Player = (function(Entity) {
 			/********************/
 		},
 		/* Setter function so caching can be setup immediately */
-		setupShape : function() {
-			this.shape = new createjs.Bitmap("../img/player.png");
-			this.shape.regX = WIDTH / 2;
-			this.shape.regY = HEIGHT / 2;
-			this.shape.snapToPixel = true;
+		setupShape : function(callback) {
+			var img = new Image();
+			img.src = "../img/player.png";
+			img.onload = function(e) {
+				this.shape = new createjs.Bitmap(e.target);
+				this.shape.regX = WIDTH / 2;
+				this.shape.regY = HEIGHT / 2;
+				this.shape.snapToPixel = true;
 
-			// To calculate initial bounding box
-			this.render();
+				// To calculate initial bounding box
+				this.render();
+				callback();
+			}.bind(this);
 		},
 		setHeading : function(x, y) {
 			this.xHeading = x;
@@ -787,7 +798,8 @@ var Lazer = (function(Entity) {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
 			this.shape.setBounds(this.x, this.y, 1, 1);
-			
+
+			this.shape.graphics.setStrokeStyle(window.devicePixelRatio * 1).beginStroke("#00dd53").moveTo(0, 0).lineTo(this.vx * 5 * window.devicePixelRatio, this.vy * 5 * window.devicePixelRatio).endStroke();
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
@@ -868,20 +880,27 @@ var Alien = (function(Entity) {
 		this.updateHeading();
 		this.lastLazer = new Date().getTime();
 		this.startTime = new Date().getTime();
-
-		// Load image
-		this.shape = new createjs.Bitmap("../img/alien.png");
-		this.shape.snapToPixel = true;
-		this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
-		this.shape.alpha = 0;
-
-		createjs.Tween.get(this.shape).to({
-	        alpha: 1
-	    }, 2000)
 	}
 
 	Alien.prototype = {
 		constructor : Alien,
+		setupShape : function(callback) {
+			var img = new Image();
+			img.src = "../img/alien.png";
+			img.onload = function(e) {
+				// Load image
+				this.shape = new createjs.Bitmap(e.target);
+				this.shape.snapToPixel = true;
+				this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
+				this.shape.alpha = 0;
+
+				createjs.Tween.get(this.shape).to({
+			        alpha: 1
+			    }, 2000);
+
+				callback();
+			}.bind(this);
+		},
 		updateHeading : function() {
 			this.setHeading(this.maxX * Math.random(), this.maxY * Math.random());
 			this.lastHeadingUpdate = new Date().getTime();
