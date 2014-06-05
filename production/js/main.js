@@ -129,16 +129,16 @@ var SpaceRocks = (function() {
 			_this.score = 0;
 
 			// Setup entity array
-			_this.setupEntities();
-		
-			// Current level
-			_this.level = 1;
+			_this.setupEntities(function() {
+				// Current level
+				_this.level = 1;
 
-			// Setup target FPS
-			createjs.Ticker.setFPS(TARGET_FPS);
-			createjs.Ticker.addEventListener("tick", _this.tick);
+				// Setup target FPS
+				createjs.Ticker.setFPS(TARGET_FPS);
+				createjs.Ticker.addEventListener("tick", _this.tick);
+			});
 		},
-		setupEntities : function() {
+		setupEntities : function(callback) {
 			// Create navigation
 			_this.navigationContainer = new createjs.Container();
 			_this.navigationContainer.visible = false;
@@ -164,6 +164,8 @@ var SpaceRocks = (function() {
 				_this.hud = new HUD(_this, _this.player);
 				// Add initial entities
 				_this.addInitialAsteroids();
+				// Execute callback
+				callback();
 			});
 		},
 		attachObservers : function() {
