@@ -85,7 +85,7 @@ var SpaceRocks = (function() {
 		})
 
 		// Create stage and enable touch
-		_this.stage = new createjs.Stage("game");
+		_this.stage = new createjs.SpriteStage("game");
 		createjs.Touch.enable(_this.stage);
 		_this.stage.enableMouseOver(10);
 		_this.stage.snapToPixelEnabled = true;	
@@ -155,10 +155,12 @@ var SpaceRocks = (function() {
 
 			// Create player
 			_this.player = new Player(_this);
-			_this.player.setupShape();
 			_this.player.x = (_this.width / 2) - (_this.player.width / 2);
 			_this.player.y = (_this.height / 2) - (_this.player.height / 2);
-			_this.addEntity(_this.player, 2);
+			_this.player.setupShape(function() {
+				_this.addEntity(_this.player, 2);
+			});
+			
 
 			// Create HUD
 			_this.hud = new HUD(_this, _this.player);
@@ -307,11 +309,6 @@ var SpaceRocks = (function() {
 		addEntity : function(entity, index) {
 			//if(entity.className() === "Particle") return;
 
-			// Ensure everuthing is a Bitmap for WebGL compatibility
-			/* var shape = entity.shape;
-			if(shape.graphics != null) {
-				shape = new createjs.Bitmap(shape.cacheCanvas);
-			}*/
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
 			if(index != null && _this.stage.length > index) {
@@ -320,12 +317,7 @@ var SpaceRocks = (function() {
 				_this.stage.addChild(entity.shape);
 			}
 		},
-		addShape : function(shape, index) {
-			// Ensure everuthing is a Bitmap for WebGL compatibility
-			if(shape.graphics != null) {
-				shape = new createjs.Bitmap(shape.cacheCanvas);
-			}			
-
+		addShape : function(shape, index) {	
 			if(index != null && _this.stage.length > index) {
 				_this.stage.addChildAt(shape, index);
 			} else {
@@ -445,7 +437,9 @@ var SpaceRocks = (function() {
 					alien.y = _this.height * Math.random();
 
 					// Add to entity list
-					_this.addEntity(alien);
+					alien.setupShape(function() {
+						_this.addEntity(alien);
+					})
 				}
 			}	
 
@@ -504,7 +498,7 @@ var SpaceRocks = (function() {
 			}
 			starsShape.cache(0, 0, _this.width, _this.height);
 
-			_this.addShape(starsShape, 0);
+			_this.addShape(new createjs.Bitmap(starsShape.cacheCanvas, 0));
 		},
 		checkGameOver : function() {
 			if($(document.body).hasClass("in-game") && _this.player.isDead() 

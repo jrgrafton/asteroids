@@ -160,13 +160,16 @@ var Asteroid = (function(Entity) {
 			this.shape = shape;
 			this.shape.scaleX = window.devicePixelRatio;
 			this.shape.scaleY = window.devicePixelRatio;
+
 			this.drawOutline(this.shape);
 			this.shape.cache(-(this.radius + 4), 
 							-(this.radius + 4), 
 							(this.radius * 2) + 8, 
-							(this.radius * 2) + 8, 
-							window.devicePixelRatio);
-
+							(this.radius * 2) + 8, window.devicePixelRatio);
+			
+			this.shape = new createjs.Bitmap(this.shape.cacheCanvas);
+			this.shape.regX = this.radius * 2;
+			this.shape.regY = this.radius * 2;
 			this.shape.snapToPixel = true;
 
 			// To calculate initial bounding box
@@ -207,7 +210,7 @@ var Asteroid = (function(Entity) {
 			// Set bounds just below maximum extent
 			var radiusDiff = this.maxRadius - this.minRadius;
 			var diameter = (this.minRadius + (0.7 * radiusDiff)) * 2;
-			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
+			this.shape.setBounds(this.x, this.y, diameter * window.devicePixelRatio, diameter * window.devicePixelRatio);
 		},
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
@@ -548,14 +551,19 @@ var Player = (function(Entity) {
 			/********************/
 		},
 		/* Setter function so caching can be setup immediately */
-		setupShape : function() {
-			this.shape = new createjs.Bitmap("../img/player.png");
-			this.shape.regX = WIDTH / 2;
-			this.shape.regY = HEIGHT / 2;
-			this.shape.snapToPixel = true;
+		setupShape : function(callback) {
+			var img = new Image();
+			img.src = "../img/player.png";
+			img.onload = function(e) {
+				this.shape = new createjs.Bitmap(e.target);
+				this.shape.regX = WIDTH / 2;
+				this.shape.regY = HEIGHT / 2;
+				this.shape.snapToPixel = true;
 
-			// To calculate initial bounding box
-			this.render();
+				// To calculate initial bounding box
+				this.render();
+				callback();
+			}.bind(this);
 		},
 		setHeading : function(x, y) {
 			this.xHeading = x;
@@ -764,15 +772,19 @@ var Lazer = (function(Entity) {
 		constructor : Lazer,
 		setShape : function(shape) {
 			this.shape = shape;
-			this.shape.scaleX = window.devicePixelRatio;
-			this.shape.scaleY = window.devicePixelRatio;
-			this.shape.snapToPixel = true;
-
-			this.shape.setBounds(this.x, this.y, 1, 1);
 		},
 		setHeading : function(xHeading, yHeading) {
 			this.xHeading = xHeading;
 			this.yHeading = yHeading;
+
+			// Figure out velocity vectors
+			this.update();
+			
+			// Draw vector and convert to Bitmap
+			this.shape.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#00dd53").moveTo(0, 0).lineTo(this.vx * 10 * window.devicePixelRatio, this.vy * 10 * window.devicePixelRatio).endStroke();
+			this.shape.cache(-10 * window.devicePixelRatio ,-10 * window.devicePixelRatio, 20 * window.devicePixelRatio, 20 * window.devicePixelRatio);
+			this.shape = new createjs.Bitmap(this.shape.cacheCanvas);
+			this.shape.snapToPixel = true;
 		},
 		getHitBoxType : function() {
 			return Physics.hitBoxTypes.POINT
@@ -786,8 +798,8 @@ var Lazer = (function(Entity) {
 		render : function() {
 			this.shape.x = this.x;
 			this.shape.y = this.y;
+
 			this.shape.setBounds(this.x, this.y, 1, 1);
-			
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
@@ -868,20 +880,27 @@ var Alien = (function(Entity) {
 		this.updateHeading();
 		this.lastLazer = new Date().getTime();
 		this.startTime = new Date().getTime();
-
-		// Load image
-		this.shape = new createjs.Bitmap("../img/alien.png");
-		this.shape.snapToPixel = true;
-		this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
-		this.shape.alpha = 0;
-
-		createjs.Tween.get(this.shape).to({
-	        alpha: 1
-	    }, 2000)
 	}
 
 	Alien.prototype = {
 		constructor : Alien,
+		setupShape : function(callback) {
+			var img = new Image();
+			img.src = "../img/alien.png";
+			img.onload = function(e) {
+				// Load image
+				this.shape = new createjs.Bitmap(e.target);
+				this.shape.snapToPixel = true;
+				this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
+				this.shape.alpha = 0;
+
+				createjs.Tween.get(this.shape).to({
+			        alpha: 1
+			    }, 2000);
+
+				callback();
+			}.bind(this);
+		},
 		updateHeading : function() {
 			this.setHeading(this.maxX * Math.random(), this.maxY * Math.random());
 			this.lastHeadingUpdate = new Date().getTime();
@@ -953,14 +972,15 @@ var Alien = (function(Entity) {
 			var timeSinceLazer = new Date().getTime() - this.lastLazer;
 			if(timeSinceLazer > FIRE_INTERVAL) {
 				if(Math.random() > FIRE_CHANCE) {
-					var shape = new createjs.Shape();
 					var lazer = new Lazer();
-					var playerLocation = window.spaceRocks.getPlayerLocaton()
-
-					lazer.setHeading(playerLocation.x, playerLocation.y);
+					lazer.setShape(new createjs.Shape());
 					lazer.x = this.x + WIDTH / 2;
 					lazer.y = this.y + HEIGHT / 2;
-					lazer.setShape(shape);
+
+					var playerLocation = window.spaceRocks.getPlayerLocaton()
+					lazer.setHeading(playerLocation.x, playerLocation.y);
+
+					
 					window.spaceRocks.addEntity(lazer, 1);
 				}
 
@@ -1018,18 +1038,19 @@ var Particle = (function(Entity) {
 		init : function(location, color, velocityVectors, speed, size, type) {
 			this.shape = new createjs.Shape();
 			size *= window.devicePixelRatio; // Faster than scaling up
-			this.shape.snapToPixel = true;
 
 			switch(type) {
 				case "square":
 					this.shape.graphics.beginFill(color).drawRect(0, 0, size, size);
 				break;
 				case "line" :
-					this.shape.graphics.setStrokeStyle(3 * window.devicePixelRatio).beginStroke(color).moveTo(0, 0).lineTo(0, size).endStroke();
+					this.shape.graphics.setStrokeStyle(6 * window.devicePixelRatio).beginStroke(color).moveTo(0, 0).lineTo(0, size).endStroke();
 				break;
 			}
 
-			this.shape.cache(-size, -size, size * 2, size * 2, window.devicePixelRatio);
+			this.shape.cache(0, 0, size * window.devicePixelRatio, size * window.devicePixelRatio);
+			this.shape = new createjs.Bitmap(this.shape.cacheCanvas);
+			this.shape.snapToPixel = true;
 
 			this.x = location.x;
 			this.y = location.y;
