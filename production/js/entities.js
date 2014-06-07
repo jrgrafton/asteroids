@@ -127,7 +127,7 @@ var Asteroid = (function(Entity) {
 			var angle = 0.0;
 			var vx = 1;
 			var vy = 0;
-			shape.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#ffffff");
+			shape.graphics.setStrokeStyle(4).beginStroke("#ffffff");
 
 			shape.graphics.moveTo(firstPoint.x, firstPoint.y);
 			this.points.push(firstPoint);
@@ -559,9 +559,11 @@ var Player = (function(Entity) {
 			img.src = window.location.origin + window.location.pathname + "/img/player.png";
 			img.onload = function(e) {
 				this.shape = new createjs.Bitmap(e.target);
-				this.shape.regX = WIDTH / 2;
-				this.shape.regY = HEIGHT / 2;
+				this.shape.regX = WIDTH / window.devicePixelRatio;
+				this.shape.regY = HEIGHT / window.devicePixelRatio;
 				this.shape.snapToPixel = true;
+				this.shape.scaleX = 0.5 * window.devicePixelRatio;
+				this.shape.scaleY = 0.5 * window.devicePixelRatio;
 
 				// To calculate initial bounding box
 				this.render();
@@ -893,6 +895,8 @@ var Alien = (function(Entity) {
 				this.shape.snapToPixel = true;
 				this.shape.setBounds(this.x, this.y, WIDTH, HEIGHT);
 				this.shape.alpha = 0;
+				this.shape.scaleX = 0.5 * window.devicePixelRatio;
+				this.shape.scaleY = 0.5 * window.devicePixelRatio;
 
 				createjs.Tween.get(this.shape).to({
 			        alpha: 1

@@ -147,7 +147,7 @@ var SpaceRocks = (function() {
 
 			var navigationCircle = new createjs.Shape();
 			navigationCircle.name = "navigationCircle";
-			navigationCircle.graphics.setStrokeStyle(4).beginStroke("#15558b").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
+			navigationCircle.graphics.setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#15558b").drawCircle(0, 0, 35 * window.devicePixelRatio, 35 * window.devicePixelRatio);
 			navigationCircle.cache(-((35 * window.devicePixelRatio) + 8), -((35 * window.devicePixelRatio) + 8), (35 * window.devicePixelRatio) * 2 + 16, (35 * window.devicePixelRatio) * 2 + 16, window.devicePixelRatio);
 
 			var navigationLine = new createjs.Shape();
