@@ -33,6 +33,9 @@ canvas {
 h1 {
 	font-size: 6.15em;
 	margin: 0px;
+}
+
+.win h1  {
 	-webkit-text-stroke: 1px black; /* Fix for aliasing on Windows */
 }
 

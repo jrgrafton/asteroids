@@ -83,7 +83,6 @@ var SpaceRocks = (function() {
 		$(document.body).css({
 			"width" : _this.canvas.style.width
 		});
-
 		$(_this.canvas).addClass("animated fadeIn");
 
 		// Create stage and enable touch
