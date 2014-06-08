@@ -26,8 +26,8 @@ var SpaceRocks = (function() {
 	var _this;
 
 	// Global static vars
-	var MAX_WIDTH = (!$("html").hasClass("touch"))? 268 : 1024;
-	var MAX_HEIGHT = (!$("html").hasClass("touch"))? 479 : 1024;;
+	var MAX_WIDTH = ($("html").hasClass("touch") && ($("html").hasClass("ios") || $("html").hasClass("android")))? 2048 : 268;
+	var MAX_HEIGHT = ($("html").hasClass("touch") && ($("html").hasClass("ios") || $("html").hasClass("android")))? 2048 : 479;
 	var TARGET_FPS = 60;
 
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
@@ -86,6 +86,11 @@ var SpaceRocks = (function() {
 		});
 		$(_this.canvas).addClass("animated fadeIn");
 
+		// Double initial asteroid count for tablet devices
+		if(_this.canvas.width * _this.canvas.height > 2500) {
+			INITIAL_ASTEROID_COUNT *= 2;
+		}
+
 		// Create stage and enable touch
 		_this.stage = new createjs.Stage("game");
 		createjs.Touch.enable(_this.stage);
@@ -93,8 +98,20 @@ var SpaceRocks = (function() {
 		_this.stage.snapToPixelEnabled = true;	
 
 		// Initialise game and attach click and touch observers
-		_this.attachObservers();	
-		_this.init();
+		if($(".touch-splash:visible").length === 0) {
+			_this.attachObservers();	
+			_this.init();
+		} else {
+			$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
+				$(".touch-splash").addClass("fadeOut animated");
+				$(".touch-splash").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+					$(this).remove();
+				});
+
+				_this.attachObservers();	
+				_this.init();
+			})
+		}
 	}
 
 	SpaceRocks.prototype = {
