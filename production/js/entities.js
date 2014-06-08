@@ -478,8 +478,8 @@ var Player = (function(Entity) {
 	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
 
 	// Data fields
-	var MAX_MISSILES = 5;
-	var MISSILE_RECHARGE_TIME = 1000; // in ms
+	var MAX_MISSILES = 4;
+	var MISSILE_RECHARGE_TIME = 750; // in ms
 	var MISSILE_INITIAL_SPEED = 1.4; // Mltiplier for missile exit speed
 	var INVULNERABLE_TIME = 4000; // ms that player is invulnerable after being killed
 

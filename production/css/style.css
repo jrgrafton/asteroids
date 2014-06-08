@@ -76,6 +76,14 @@ h1 {
 *:focus {
     outline: 0;
 }
+
+/*****************************/
+/**** Game styles - intro ****/
+/*****************************/
+.game {
+	position: relative;
+}
+
 /***************************/
 /**** UI styles - intro ****/
 /***************************/
@@ -91,7 +99,7 @@ body.intro #intro {
 	width: 100%;
 	margin-top: 20%;
 	display: none;
-	z-index: 2;
+	z-index: 1;
 }
 
 #intro .red.line {
@@ -101,10 +109,8 @@ body.intro #intro {
 	margin: 0 auto;
 	margin-top: 0.5em;
 	position: relative;
-	z-index: 1;
 }
 #intro h1.light {
-	z-index: 0;
 	opacity: 0;
 }
 #intro h1.extra-bold {
@@ -206,7 +212,12 @@ body.in-game #ui #in-game {
     -1px -1px 0 #bce9ff,
     1px -1px 0 #bce9ff,
     -1px 1px 0 #bce9ff,
-    1px 1px 0 #bce9ff; 
+    1px 1px 0 #bce9ff;
+    pointer-events: none;
+}
+
+#ui .score:hover {
+	cursor: default;
 }
 
 #ui .score.inactive {
@@ -227,7 +238,7 @@ body.game-over #game-over {
 	left: 0px;
 	width: 100%;
 	height: 100%;
-	z-index: 2;
+	z-index: 1;
 }
 
 #game-over .background {
@@ -246,7 +257,7 @@ body.game-over #game-over {
 	margin: 0 auto;
 	text-align: center;
 	padding-top: 50%;
-	margin-top: -50px;
+	margin-top: -70px;
 }
 
 #game-over .overlay .panel-header {
@@ -303,4 +314,144 @@ body.game-over #game-over {
 #game-over .overlay .panel-contents .social .sc-btn {
 	font-size: 1em;
 		width: 90%;
+}
+
+
+/***************************/
+/**** Responsive styles ****/
+/***************************/
+/*** Page defaults to mobile first ***/
+
+/* If the site is viewed on a non-touch 
+device  show full markting site */
+
+/* If the site is viewed on a screen that is considered
+larger than a mobile screen show marketing site */
+/* Columns */
+.column {
+	float: left;
+	margin-right: 3.125%;
+	position: relative;
+}
+
+.column.centered {
+	float: none;
+	margin: 0 auto;
+}
+
+.column + .column:last-child {
+	margin-right: 0;
+	float: right;
+}
+
+.column.last {
+	margin-right: 0;
+	float: right;
+}
+
+.column-1 	{ width: 5.46875%; }
+.column-2 	{ width: 14.0625%; }
+.column-3 	{ width: 22.65625%; }
+.column-4 	{ width: 31.25%; }
+.column-5 	{ width: 39.84375%; }
+.column-6 	{ width: 48.4375%; }
+.column-7 	{ width: 57.03125%; }
+.column-8 	{ width: 65.625%; }
+.column-9 	{ width: 74.21875%; }
+.column-10 	{ width: 82.8125%; }
+.column-11 	{ width: 97.65625px; }
+.column-12 	{ width: 100%; margin-right: 0; }
+
+
+@media only screen 
+and (min-device-width : 1025px) {
+	/* Show marketing site */
+	html {
+		background: #353b4a;
+	}
+	.mask {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		z-index: 1;
+		background-color: black;
+	}
+	.container {
+		padding-top: 2em;
+		width: 960px;
+		margin-right: auto;
+		margin-left: auto;
+		padding-left: 15px;
+		padding-right: 15px;
+		min-height: 710px;
+	}
+
+	.game-shim {
+		position: absolute;
+		z-index: 2;
+		pointer-events:none;
+	}
+
+	.game {
+		margin-top: 102px;
+		margin-left: 28px;
+		height: 677px;
+	}
+
+	.marketing {
+		padding-top: 9em;
+	}
+
+	.marketing h1 {
+		color: #c5cee3;
+		font-weight: 100;
+		padding-top: 0.33em;
+		padding-bottom: 0.66em;
+		font-size: 4.6125em;
+	}
+
+	.marketing .logo {
+		font-size: 2.7556em;
+		line-height: 65px;
+	}
+	.marketing .logo img {
+		float: left;
+		margin-right: 0.5em;
+	}
+
+	.marketing .instructions {
+		color: white;
+		font-size: 1.66em;
+	}
+
+	.marketing .download img.ios {
+		margin-right: 2em;
+	}
+}
+
+/* Touch devices */
+html.touch {
+	background: white;
+}
+.touch .container {
+	width: 100%;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+}
+
+.touch .container .column {
+	width: 100%;
+}
+
+.touch .container .game {
+	margin: 0px;
+}
+
+.touch .container .marketing {
+	display: none;
+}
+
+.touch .container .game-shim {
+	display: none;
 }

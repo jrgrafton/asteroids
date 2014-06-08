@@ -26,8 +26,8 @@ var SpaceRocks = (function() {
 	var _this;
 
 	// Global static vars
-	var MAX_WIDTH = 320;
-	var MAX_HEIGHT = 568;
+	var MAX_WIDTH = (!$("html").hasClass("touch"))? 268 : 1024;
+	var MAX_HEIGHT = (!$("html").hasClass("touch"))? 479 : 1024;;
 	var TARGET_FPS = 60;
 
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
@@ -80,8 +80,9 @@ var SpaceRocks = (function() {
 		_this.canvas.height = _this.height;
 		_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
 		_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
-		$(document.body).css({
-			"width" : _this.canvas.style.width
+		$(".game").css({
+			"width" : _this.canvas.style.width,
+			"height" : _this.canvas.style.height
 		});
 		$(_this.canvas).addClass("animated fadeIn");
 
