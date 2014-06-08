@@ -522,3 +522,9 @@ and (max-device-width : 1280px) {
 		cursor: pointer;
 	}
 }
+@media only screen 
+and (max-device-width : 592px) {
+	.touch .touch-splash {
+		font-size: 10px
+	}
+}
