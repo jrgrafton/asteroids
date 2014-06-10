@@ -432,26 +432,29 @@ larger than a mobile screen show marketing site */
 	margin-top: 1em;
 }
 
-/* Unsupported browser */
-.unsupported-browser .game-container {
-	display: none;
-}
-.unsupported-browser .unsupported-browser-splash {
-	display: table;
-}
+@media only screen 
+and (min-device-width : 1024px) {
+	/* Unsupported desktop browser */
+	.unsupported-browser .game-container {
+		display: none;
+	}
+	.unsupported-browser .unsupported-browser-splash {
+		display: table;
+	}
 
-.unsupported-browser .unsupported-browser-splash .download {
-	display: inline-block;
-	overflow: auto;
-	zoom: 1;
-}
+	.unsupported-browser .unsupported-browser-splash .download {
+		display: inline-block;
+		overflow: auto;
+		zoom: 1;
+	}
 
-.unsupported-browser .unsupported-browser-splash .download a {
-	float: left;
-}
+	.unsupported-browser .unsupported-browser-splash .download a {
+		float: left;
+	}
 
-.unsupported-browser .unsupported-browser-splash .download a span {
-	display: block;
+	.unsupported-browser .unsupported-browser-splash .download a span {
+		display: block;
+	}
 }
 
 @media only screen 
