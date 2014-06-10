@@ -561,7 +561,7 @@ and (max-device-width : 1280px) {
 	}
 
 	.touch.non-native.ios .download img {
-		margin-bottom: 2	.0em;
+		margin-bottom: 2.0em;
 	}
 
 	.touch.non-native.ios .download .android {
