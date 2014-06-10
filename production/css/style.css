@@ -41,7 +41,8 @@ h1 {
 }
 h2 {
 	font-size: 4.059em;
-	margin: 0.5em;
+	margin-top: 0.33em;
+	margin-bottom: 0.33em;
 }
 
 h3 {
@@ -401,9 +402,8 @@ larger than a mobile screen show marketing site */
 	position: absolute;
 	z-index: 3;
 	background: white;
-	display: table;
 	color: #444;
-	opacity: :0;
+	opacity: 0;
 	padding-left: 5%;
 	padding-right: 5%;
 }
@@ -432,6 +432,27 @@ larger than a mobile screen show marketing site */
 	margin-top: 1em;
 }
 
+/* Unsupported browser */
+.unsupported-browser .game-container {
+	display: none;
+}
+.unsupported-browser .unsupported-browser-splash {
+	display: table;
+}
+
+.unsupported-browser .unsupported-browser-splash .download {
+	display: inline-block;
+	overflow: auto;
+	zoom: 1;
+}
+
+.unsupported-browser .unsupported-browser-splash .download a {
+	float: left;
+}
+
+.unsupported-browser .unsupported-browser-splash .download a span {
+	display: block;
+}
 
 @media only screen 
 and (min-device-width : 1024px) {
@@ -540,7 +561,7 @@ and (max-device-width : 1280px) {
 	}
 
 	.touch.non-native.ios .download img {
-		margin-bottom: 2.0em;
+		margin-bottom: 2	.0em;
 	}
 
 	.touch.non-native.ios .download .android {

@@ -34,7 +34,7 @@
 	<script src="js/hud.js"></script>
 	<script src="js/main.js"></script>
 </head>
-<body ontouchmove="event.preventDefault()">
+<body ontouchmove="event.preventDefault()" class="animated fadeIn">
     <div class="touch-splash splash">
         <div class="container">
             <div class="logo">
@@ -53,7 +53,31 @@
             </a>
         </div>
     </div>
-    <div class="container">
+    <div class="unsupported-browser-splash splash">
+        <div class="container">
+            <div class="logo">
+                <span>Space</span>
+                <span class="extra-bold ">Rocks</span>
+            </div>
+            <div class="tagline light">A modern take on an arcade classic</div>
+            <div class="red line"></div>
+            <h2 class="bold">Uhoh!</h2>
+            <h3 class="normal">Looks like we don't support your browser</h3>
+            <div class="download">
+                <a href="https://www.google.co.uk/intl/en_uk/chrome/browser/">
+                    <img class="chrome" width="150px" src="img/logo-chrome.png">
+                    <span>Download Chrome</span>
+                </a>
+
+                <a href="http://www.mozilla.org/en-GB/firefox/new/">
+                    <img class="firefox" width="150px" src="img/logo-firefox.png">
+                    <span>Download Firefox</span>
+                </a>
+                <br />
+            </div>
+        </div>
+    </div>
+    <div class="game-container container">
         <div class="column-5 column">
             <img class="game-shim" src="img/iphone-shim.png" width="320px;">
             <div class="game">

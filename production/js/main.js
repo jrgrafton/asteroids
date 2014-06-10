@@ -98,10 +98,8 @@ var SpaceRocks = (function() {
 		_this.stage.snapToPixelEnabled = true;	
 
 		// Initialise game and attach click and touch observers
-		if($("html.touch.non-native").length === 0) {
-			_this.attachObservers();	
-			_this.init();
-		} else {
+		if($("html.touch.non-native").length !== 0){
+			// Prompt user to download app
 			$(".touch-splash").addClass("animated fadeIn");
 			$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
 				$(".touch-splash").addClass("fadeOut animated");
@@ -112,6 +110,13 @@ var SpaceRocks = (function() {
 				_this.attachObservers();	
 				_this.init();
 			})
+		} else if($("html.unsupported-browser").length !== 0){
+			// Prompt user to download new browser
+			$(".unsupported-browser-splash").addClass("animated fadeIn");
+		} else {
+			// Start straight away
+			_this.attachObservers();	
+			_this.init();
 		}
 	}
 

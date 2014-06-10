@@ -491,7 +491,10 @@ var Player = (function(Entity) {
 			}
 		}
 		// Scale based on canvas size
+		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
+		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		this.lifeCount = 3;
+
 		this.init();
 	} 
 
