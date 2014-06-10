@@ -87,7 +87,7 @@ var SpaceRocks = (function() {
 		$(_this.canvas).addClass("animated fadeIn");
 
 		// Double initial asteroid count for tablet devices
-		if(_this.canvas.width * _this.canvas.height > 2500) {
+		if((_this.width / window.devicePixelRatio) * (_this.height / window.devicePixelRatio) > 250000) { /* Over 500 * 500? Add more asteroids */
 			INITIAL_ASTEROID_COUNT *= 2;
 		}
 
@@ -98,10 +98,11 @@ var SpaceRocks = (function() {
 		_this.stage.snapToPixelEnabled = true;	
 
 		// Initialise game and attach click and touch observers
-		if($(".touch-splash:visible").length === 0) {
+		if($("html.touch.non-native").length === 0) {
 			_this.attachObservers();	
 			_this.init();
 		} else {
+			$(".touch-splash").addClass("animated fadeIn");
 			$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
 				$(".touch-splash").addClass("fadeOut animated");
 				$(".touch-splash").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {

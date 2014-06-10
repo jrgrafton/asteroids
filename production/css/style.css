@@ -2,6 +2,11 @@
 /**** Global styles ****/
 /***********************/
 @import url("fonts.css");
+* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none; /* Disable selection/copy in UIWebView */
+    -webkit-tap-highlight-color: transparent; /* Disable grey highlight */
+}
 html {
 	-webkit-font-smoothing:antialiased;
 }
@@ -37,6 +42,20 @@ h1 {
 h2 {
 	font-size: 4.059em;
 	margin: 0.5em;
+}
+
+h3 {
+	font-size: 2.27894em;
+	margin-top: 0.66em;
+	margin-bottom: 0.66em;
+}
+
+a {
+	color: #cc423b;
+	text-decoration: underline;
+	font-size: 1.66em;
+	font-weight: 600;
+	padding:15px; /* So touch targets are easier to get to */
 }
 
 .win h1  {
@@ -370,6 +389,50 @@ larger than a mobile screen show marketing site */
 .column-11 	{ width: 97.65625px; }
 .column-12 	{ width: 100%; margin-right: 0; }
 
+/***********************************/
+/**** Environmental components ****/
+/**********************************/
+
+/* Splash */
+.splash {
+	width: 90%;
+	height: 100%;
+	display: none;
+	position: absolute;
+	z-index: 3;
+	background: white;
+	display: table;
+	color: #444;
+	opacity: :0;
+	padding-left: 5%;
+	padding-right: 5%;
+}
+
+.splash .container { 
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.splash .logo {
+	color: black;
+	font-size: 6.19384615384615384615em;
+	line-height: 1em;
+}
+
+.splash .container .tagline {
+	font-size: 2.06461538461538461538em;
+}
+
+.splash .container .red.line {
+	width: 90%;
+	height: 5px;
+	background-color: #cc423b;
+	margin: auto;
+	margin-top: 1em;
+}
+
+
 @media only screen 
 and (min-device-width : 1024px) {
 	/* Show marketing site */
@@ -445,7 +508,7 @@ and (max-width : 959px) {
 /* Touch devices below 1280px - show full screen game */
 @media only screen 
 and (max-device-width : 1280px) {
-	html.touch {
+	html.touch, html.touch body {
 		background: white;
 	}
 
@@ -471,60 +534,26 @@ and (max-device-width : 1280px) {
 		display: none;
 	}
 
-	/* Splash screen */
-	.touch .touch-splash {
-		width: 100%;
-		height: 100%;
-		display: block;
-		position: absolute;
-		z-index: 3;
-		background: white;
+	/* Splash screen for mobile web */
+	.touch.non-native .touch-splash {
 		display: table;
-		color: #444;
-	}
-	.touch .touch-splash .container { 
-		display: table-cell;
-		vertical-align: middle;
-		text-align: center;
-	}
-	.touch .touch-splash .container .logo {
-		color: black;
-		font-size: 6.19384615384615384615em;
 	}
 
-	.touch .touch-splash .container .tagline {
-		font-size: 2.06461538461538461538em;
-	}
-	.touch .touch-splash .container .red.line {
-		width: 90%;
-		height: 5px;
-		background-color: #cc423b;
-		margin: auto;
-		margin-top: 1em;
+	.touch.non-native.ios .download img {
+		margin-bottom: 2.0em;
 	}
 
-	.touch.ios .download .android {
+	.touch.non-native.ios .download .android {
 		display: none;
 	}
 
-	.touch.android .download .ios {
+	.touch.non-native.android .download .ios {
 		display: none;
-	}
-
-	.touch .play-now {
-		color: #cc423b;
-		text-decoration: underline;
-		font-size: 1.66em;
-		font-weight: 600;
-	}
-	
-	.touch .play-now:hover {
-		cursor: pointer;
 	}
 }
 @media only screen 
 and (max-device-width : 592px) {
-	.touch .touch-splash {
+	html.touch body {
 		font-size: 10px
 	}
 }
