@@ -73,17 +73,7 @@ var SpaceRocks = (function() {
 		}
 
 		// Set dimensions
-		_this.canvas = document.getElementById("game");
-		_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
-		_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
-		_this.canvas.width = _this.width;
-		_this.canvas.height = _this.height;
-		_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
-		_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
-		$(".game").css({
-			"width" : _this.canvas.style.width,
-			"height" : _this.canvas.style.height
-		});
+		_this.resizeToScreen();
 		$(_this.canvas).addClass("animated fadeIn");
 
 		// Double initial asteroid count for tablet devices
@@ -135,6 +125,19 @@ var SpaceRocks = (function() {
 
 			// Show intro screen
 			_this.showIntroScreen();
+		},
+		resizeToScreen : function() {
+			_this.canvas = document.getElementById("game");
+			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
+			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
+			_this.canvas.width = _this.width;
+			_this.canvas.height = _this.height;
+			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
+			_this.canvas.style.height = (_this.height / window.devicePixelRatio) + "px";
+			$(".game").css({
+				"width" : _this.canvas.style.width,
+				"height" : _this.canvas.style.height
+			});
 		},
 		showIntroScreen : function() {
 			$(document.body).addClass("intro");
@@ -290,6 +293,12 @@ var SpaceRocks = (function() {
 			 	}
 			 	_this.mouseUp = overridenEvent;
 			 	_this.mouseDown = null;
+			});
+
+			// Rotation detection
+			window.addEventListener('orientationchange', function() { 
+				_this.resizeToScreen();
+				_this.addStars()
 			});
 		},
 		/****************************************/
@@ -513,8 +522,10 @@ var SpaceRocks = (function() {
 			}
 		},
 		addStars : function() {
+			// Remove current stars shape
+			_this.removeShape(_this.starsShape);
 			var particleCount = 200;
-			var starsShape = new createjs.Shape();
+			_this.starsShape = new createjs.Shape();
 
 			for(var i = 0; i < particleCount; i++) {
 				var size = ((Math.random() * 2) + 1) * window.devicePixelRatio;
@@ -524,11 +535,11 @@ var SpaceRocks = (function() {
 				var color = "" + (Math.round(Math.random() * 255)).toString(16);
 				color = "#" + color + color + color;
 
-				starsShape.graphics.beginFill(color).drawRect(x, y, size, size);
+				_this.starsShape.graphics.beginFill(color).drawRect(x, y, size, size);
 			}
-			starsShape.cache(0, 0, _this.width, _this.height);
+			_this.starsShape.cache(0, 0, _this.width, _this.height);
 
-			_this.addShape(starsShape, 0);
+			_this.addShape(_this.starsShape, 0);
 		},
 		checkGameOver : function() {
 			if($(document.body).hasClass("in-game") && _this.player.isDead() 

@@ -91,10 +91,6 @@ var Asteroid = (function(Entity) {
 			// Current size index
 			this.radius = SIZES[this.sizeIndex];
 
-			// Max extents
-			this.maxX = window.spaceRocks.getDimensions().width;
-			this.maxY = window.spaceRocks.getDimensions().height;
-
 			// Rotation speed and angle (in degress per ms)
 			this.rotation = 0;
 			this.rotationSpeed = ROTATION_SPEED * (Math.random() + 0.5);
@@ -212,6 +208,10 @@ var Asteroid = (function(Entity) {
 		update : function() {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
 			this.lastUpdate = new Date().getTime();
+
+			// Max extents - update maxX and maxY each tick in case device has rotated
+			this.maxX = window.spaceRocks.getDimensions().width;
+			this.maxY = window.spaceRocks.getDimensions().height;
 
 			this.x += (timeSinceUpdate * this.speed) * this.vx;
 			this.y += (timeSinceUpdate * this.speed) * this.vy;
@@ -528,10 +528,6 @@ var Player = (function(Entity) {
 
 			// Last update (so updates can be FPS independent)
 			this.lastUpdate = new Date().getTime();
-
-			// Max locations for ship
-			this.maxX =  window.spaceRocks.getDimensions().width;
-			this.maxY = window.spaceRocks.getDimensions().height;
 			/************************/
 			/* END: movement fields */
 			/************************/
@@ -628,6 +624,10 @@ var Player = (function(Entity) {
 
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
 			this.lastUpdate = new Date().getTime();
+
+			// Max locations for ship, reset each tick incase device has rotated
+			this.maxX =  window.spaceRocks.getDimensions().width;
+			this.maxY = window.spaceRocks.getDimensions().height;
 
 			// Invilerability toggle
 			if(this.invulerable) {
@@ -862,10 +862,6 @@ var Alien = (function(Entity) {
 		this.width = WIDTH;
 		this.height = HEIGHT;
 
-		// Max extents
-		this.maxX = window.spaceRocks.getDimensions().width;
-		this.maxY = window.spaceRocks.getDimensions().height;
-
 		// Velocity components (between 0 and -1)
 		this.vx = 0;
 		this.vy = 0;
@@ -933,6 +929,10 @@ var Alien = (function(Entity) {
 			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
 			var timeSinceHeadingUpdate = new Date().getTime() - this.lastHeadingUpdate;
 			this.lastUpdate = new Date().getTime();
+
+			// Max extents
+			this.maxX = window.spaceRocks.getDimensions().width;
+			this.maxY = window.spaceRocks.getDimensions().height;
 
 			// Possibly change heading
 			if(timeSinceHeadingUpdate > HEADING_CHANGE_INTERVAL) {
