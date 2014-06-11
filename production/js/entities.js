@@ -395,6 +395,9 @@ var Missile = (function(Entity) {
 			this.lastUpdate = new Date().getTime();
 
 			if(Math.random() > 0.1) {
+				// Less particles on non native touch
+				if($('.touch.non-native').length > 0 && Math.random() < 0.5) return;
+
 				var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
 				particle.maxAge = 500;
 				window.spaceRocks.addEntity(particle, 1);
@@ -713,6 +716,9 @@ var Player = (function(Entity) {
 			if(this.speed > 0) {
 				// More particles the faster your going
 				if(Math.random() * this.speed > MAX_SPEED / 3) {
+					// Less particles on non native touch
+					if($('.touch.non-native').length > 0 && Math.random() < 0.5) return;
+
 					// Generate particles in the middle of the ship
 					var cx  = this.x + (this.vx * (this.width / 2));
 					var cy = this.y + (this.vy * (this.height / 2));
@@ -729,7 +735,7 @@ var Player = (function(Entity) {
 						var modY = (Math.random() + 0.5);
 
 						var particle = new Particle({x : cx, y : cy}, "#84a3b3", {vx : vx * modX, vy : vy * modY}, this.speed, 1, "square");
-							window.spaceRocks.addEntity(particle, 1);
+						window.spaceRocks.addEntity(particle, 1);
 					}
 				}
 			}
