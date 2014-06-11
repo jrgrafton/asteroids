@@ -396,11 +396,12 @@ var Missile = (function(Entity) {
 
 			if(Math.random() > 0.1) {
 				// Less particles on non native touch
-				if($('.touch.non-native').length > 0 && Math.random() < 0.5) return;
+				if($('.touch.non-native').length > 0 && Math.random() < 0.5) {
 
-				var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
-				particle.maxAge = 500;
-				window.spaceRocks.addEntity(particle, 1);
+					var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
+					particle.maxAge = 500;
+					window.spaceRocks.addEntity(particle, 1);
+				}
 			}
 
 			// Get vector which connects current location to target
