@@ -85,19 +85,18 @@ var SpaceRocks = (function() {
 		_this.stage = new createjs.Stage("game");
 		createjs.Touch.enable(_this.stage);
 		_this.stage.enableMouseOver(10);
-		_this.stage.snapToPixelEnabled = true;	
+		_this.stage.snapToPixelEnabled = true;
 
 		// Initialise game and attach click and touch observers
 		if($("html.touch.non-native").length !== 0){
+			_this.attachObservers();
 			// Prompt user to download app
 			$(".touch-splash").addClass("animated fadeIn");
 			$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
 				$(".touch-splash").addClass("fadeOut animated");
 				$(".touch-splash").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 					$(this).remove();
-				});
-
-				_this.attachObservers();	
+				});	
 				_this.init();
 			})
 		} else if($("html.unsupported-browser").length !== 0){
@@ -117,19 +116,22 @@ var SpaceRocks = (function() {
 		/***********************************/
 		init : function() {
 			// Reset state
-			_this.stage.removeAllChildren();
 			_this.entities = new LinkedList();
 			_this.mouseDown = null;
 			_this.mouseUp = null;
-			_this.mouseMove = null;	
+			_this.mouseMove = null;
+
+			// Add stars
+			_this.addStars();
+			_this.stage.update();	
 
 			// Show intro screen
 			_this.showIntroScreen();
 		},
 		resizeToScreen : function() {
 			_this.canvas = document.getElementById("game");
-			_this.width = (window.innerWidth <= MAX_WIDTH)? window.innerWidth * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
-			_this.height = (window.innerHeight <= MAX_HEIGHT)? window.innerHeight * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
+			_this.width = ($(window).width() <= MAX_WIDTH)? $(window).width() * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
+			_this.height = ($(window).height() <= MAX_HEIGHT)? $(window).height() * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
 			_this.canvas.width = _this.width;
 			_this.canvas.height = _this.height;
 			_this.canvas.style.width = (_this.width / window.devicePixelRatio) + "px";
@@ -141,8 +143,6 @@ var SpaceRocks = (function() {
 		},
 		showIntroScreen : function() {
 			$(document.body).addClass("intro");
-			_this.addStars();
-			_this.stage.update();
 
 			// Add intro animations
 			$(".line.red").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
@@ -298,7 +298,10 @@ var SpaceRocks = (function() {
 			// Rotation detection
 			window.addEventListener('orientationchange', function() { 
 				_this.resizeToScreen();
-				_this.addStars()
+				_this.addStars();
+				window.scrollTo(0, 1);
+				_this.stage.update();
+
 			});
 		},
 		/****************************************/
@@ -345,7 +348,7 @@ var SpaceRocks = (function() {
 
 			// Adds object that conforms to entity interface
 			_this.entities.push(entity);
-			if(index != null && _this.stage.length > index) {
+			if(index != null && _this.stage.children.length > index) {
 				_this.stage.addChildAt(entity.shape, index);
 			} else {
 				_this.stage.addChild(entity.shape);
@@ -357,7 +360,7 @@ var SpaceRocks = (function() {
 				shape = new createjs.Bitmap(shape.cacheCanvas);
 			}			
 
-			if(index != null && _this.stage.length > index) {
+			if(index != null && _this.stage.children.length > index) {
 				_this.stage.addChildAt(shape, index);
 			} else {
 				_this.stage.addChild(shape);
@@ -388,9 +391,11 @@ var SpaceRocks = (function() {
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
+
 			// Restart requested
-			if(_this.shouldRestart) {
+			if(_this.shouldRestart === true) {
 				_this.shouldRestart = false;
+				_this.stage.removeAllChildren();
 				_this.init();
 				return;
 			}
@@ -523,10 +528,15 @@ var SpaceRocks = (function() {
 		},
 		addStars : function() {
 			// Remove current stars shape
-			_this.removeShape(_this.starsShape);
-			var particleCount = 200;
-			_this.starsShape = new createjs.Shape();
-
+			if(_this.starsShape == null) {
+				_this.starsShape = new createjs.Shape();
+				_this.starsShape.tickEnabled = false;
+			} else {
+				_this.starsShape.graphics.clear();
+				_this.stage.removeChildAt(0);
+			}
+			
+			var particleCount = 300;
 			for(var i = 0; i < particleCount; i++) {
 				var size = ((Math.random() * 2) + 1) * window.devicePixelRatio;
 				var x = Math.random() * _this.width;
@@ -537,8 +547,8 @@ var SpaceRocks = (function() {
 
 				_this.starsShape.graphics.beginFill(color).drawRect(x, y, size, size);
 			}
-			_this.starsShape.cache(0, 0, _this.width, _this.height);
 
+			_this.starsShape.cache(0, 0, _this.width, _this.height);
 			_this.addShape(_this.starsShape, 0);
 		},
 		checkGameOver : function() {

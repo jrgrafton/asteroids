@@ -18,7 +18,8 @@ html, body {
 	-ms-user-select: none;
 	user-select: none;
 	color: white;
-	font-size: 13px;
+	font-size: 13px;	margin: 0px;
+
 	font-family: "Exo 2";
 	font-style: normal;
 	overflow: hidden;
@@ -29,7 +30,6 @@ html, body {
 	height: 100%;
 }
 canvas {
-	background: black;
 	box-sizing:border-box;
 	-moz-box-sizing:border-box; /* Firefox 28 and earlier*/
 	opacity: 0;
@@ -37,7 +37,6 @@ canvas {
 
 h1 {
 	font-size: 6.15em;
-	margin: 0px;
 }
 h2 {
 	font-size: 4.059em;
@@ -112,6 +111,9 @@ a {
 	position: relative;
 }
 
+body.in-game canvas, body.intro canvas, body.game-over canvas {
+	background: black;
+}
 /***************************/
 /**** UI styles - intro ****/
 /***************************/
@@ -125,9 +127,27 @@ body.intro #intro {
 	left: 0px;
 	text-align: center;
 	width: 100%;
-	margin-top: 20%;
+	height: 100%;
 	display: none;
 	z-index: 1;
+}
+
+#intro .title-wrapper, #intro .start-wrapper {
+	display: table;
+	width:100%;
+}
+
+#intro .title-wrapper {
+	height: 60%;
+}
+
+#intro .start-wrapper {
+	height: 40%;
+}
+
+#intro .title, #intro .start {
+	display: table-cell;
+	vertical-align: middle;
 }
 
 #intro .red.line {
@@ -138,6 +158,10 @@ body.intro #intro {
 	margin-top: 0.5em;
 	position: relative;
 }
+
+#intro h1 {
+	margin: 0;
+}
 #intro h1.light {
 	opacity: 0;
 }
@@ -147,7 +171,6 @@ body.intro #intro {
 }
 #intro .button {
 	margin: 0 auto;
-	margin-top: 30%;
 	opacity: 0;
 }
 /*****************************/
@@ -256,7 +279,7 @@ body.in-game #ui #in-game {
 /**** UI styles - game over ****/
 /*******************************/
 body.game-over #game-over {
-	display: block;
+	display: table;
 }
 
 #game-over {
@@ -279,13 +302,14 @@ body.game-over #game-over {
 	opacity: 0.6;
 }
 
+#game-over .overlay-wrapper {
+	display: table-cell;
+	vertical-align: middle;
+}
 #game-over .overlay {
 	width: 250px;
-	height: 325px;
 	margin: 0 auto;
 	text-align: center;
-	padding-top: 50%;
-	margin-top: -70px;
 }
 
 #game-over .overlay .panel-header {
@@ -533,7 +557,7 @@ and (max-width : 959px) {
 @media only screen 
 and (max-device-width : 1280px) {
 	html.touch, html.touch body {
-		background: white;
+		background: black;
 	}
 
 	.touch .container {
@@ -577,7 +601,15 @@ and (max-device-width : 1280px) {
 }
 @media only screen 
 and (max-device-width : 592px) {
-	html.touch body {
+	/* Decrease splash screens font size on  mobile */
+	html.touch .splash {
 		font-size: 10px
+	}
+}
+
+@media only screen 
+and (max-device-width : 592px) and (orientation:landscape) {
+	html.touch #game-over .overlay {
+		zoom:0.85;
 	}
 }

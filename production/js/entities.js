@@ -873,6 +873,10 @@ var Alien = (function(Entity) {
 		// Speed
 		this.speed = SPEED;
 
+		// Max extents
+		this.maxX = window.spaceRocks.getDimensions().width;
+		this.maxY = window.spaceRocks.getDimensions().height;
+
 		// FPS independent movement
 		this.lastUpdate = new Date().getTime();
 		this.updateHeading();
@@ -930,7 +934,6 @@ var Alien = (function(Entity) {
 			var timeSinceHeadingUpdate = new Date().getTime() - this.lastHeadingUpdate;
 			this.lastUpdate = new Date().getTime();
 
-			// Max extents
 			this.maxX = window.spaceRocks.getDimensions().width;
 			this.maxY = window.spaceRocks.getDimensions().height;
 
@@ -1052,6 +1055,7 @@ var Particle = (function(Entity) {
 				break;
 			}
 
+			this.shape.tickEnabled = false;
 			this.shape.cache(-size, -size, size * 2, size * 2, window.devicePixelRatio);
 
 			this.x = location.x;
