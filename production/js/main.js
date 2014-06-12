@@ -78,6 +78,7 @@ var SpaceRocks = (function() {
 
 		// Double initial asteroid count for tablet devices
 		if((_this.width / window.devicePixelRatio) * (_this.height / window.devicePixelRatio) > 250000) { /* Over 500 * 500? Add more asteroids */
+			console.log("*2");
 			INITIAL_ASTEROID_COUNT *= 2;
 		}
 
@@ -86,6 +87,9 @@ var SpaceRocks = (function() {
 		createjs.Touch.enable(_this.stage);
 		_this.stage.enableMouseOver(10);
 		_this.stage.snapToPixelEnabled = true;
+
+		// Setup target FPS
+		createjs.Ticker.setFPS(TARGET_FPS);
 
 		// Initialise game and attach click and touch observers
 		if($("html.touch.non-native").length !== 0){
@@ -116,6 +120,7 @@ var SpaceRocks = (function() {
 		/***********************************/
 		init : function() {
 			// Reset state
+			_this.stage.removeAllChildren();
 			_this.entities = new LinkedList();
 			_this.mouseDown = null;
 			_this.mouseUp = null;
@@ -160,9 +165,6 @@ var SpaceRocks = (function() {
 			_this.setupEntities(function() {
 				// Current level
 				_this.level = 1;
-
-				// Setup target FPS
-				createjs.Ticker.setFPS(TARGET_FPS);
 				createjs.Ticker.addEventListener("tick", _this.tick);
 			});
 		},
@@ -209,8 +211,9 @@ var SpaceRocks = (function() {
 					$("#intro").removeClass("no-pointer-events");
 					$(document.body).removeClass("intro").addClass("in-game");
 				});
-
 				_this.startGame();
+
+				return false;
 			});
 
 			// Game over button
@@ -219,23 +222,22 @@ var SpaceRocks = (function() {
 				$("#game-over .overlay").removeClass("animated fadeInDown");
 				$("#game-over .overlay .social, #game-over .overlay .button").removeClass("animated fadeIn");
 				_this.shouldRestart = true;
+				return false;
 			});
 
 			// Post to Facebook button
 			$("#game-over .sc--facebook").click(function() {
 				_this.postToFacebook(_this.score);
+				return false;
 			});
 			// Post to Twitter button
 			$("#game-over .sc--twitter").click(function() {
 				_this.postToTwitter(_this.score);
+				return false;
 			})
 
 			// Prevent scrolling on page
-			document.addEventListener(
-			    "touchstart",
-			    function() { return false; },
-			    false
-			);
+			document.addEventListener("touchstart", function() { return false; }, false);
 
 			 _this.canvas.addEventListener("touchstart", function(e) {
 			 	_this.mouseDown = e;
@@ -391,11 +393,10 @@ var SpaceRocks = (function() {
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
-
 			// Restart requested
 			if(_this.shouldRestart === true) {
 				_this.shouldRestart = false;
-				_this.stage.removeAllChildren();
+				createjs.Ticker.removeEventListener("tick", _this.tick);
 				_this.init();
 				return;
 			}

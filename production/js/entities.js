@@ -495,10 +495,7 @@ var Player = (function(Entity) {
 			}
 		}
 		// Scale based on canvas size
-		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
-		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		this.lifeCount = 3;
-
 		this.init();
 	} 
 
@@ -1051,8 +1048,7 @@ var Particle = (function(Entity) {
 		init : function(location, color, velocityVectors, speed, size, type) {
 			this.shape = new createjs.Shape();
 			size *= window.devicePixelRatio; // Faster than scaling up
-			this.shape.snapToPixel = true;
-
+			
 			switch(type) {
 				case "square":
 					this.shape.graphics.beginFill(color).drawRect(0, 0, size, size);
@@ -1062,6 +1058,7 @@ var Particle = (function(Entity) {
 				break;
 			}
 
+			this.shape.snapToPixel = true;
 			this.shape.tickEnabled = false;
 			this.shape.cache(-size, -size, size * 2, size * 2, window.devicePixelRatio);
 
