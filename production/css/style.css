@@ -173,6 +173,44 @@ body.intro #intro {
 	margin: 0 auto;
 	opacity: 0;
 }
+
+/******************************/
+/**** UI styles - level up ****/
+/******************************/
+body.in-game #level-up {
+	display: block;
+}
+
+#level-up {
+	width: 100%;
+	height: 20%;
+	border-top:5px solid #cc423b;
+	border-bottom:5px solid #cc423b;
+	background: rgba(0, 0, 0, 0.7);
+	text-align: center;
+	position: absolute;
+	z-index: 2;
+	top: 100%;
+	box-sizing: border-box;
+	opacity: 0;
+	pointer-events:none;
+}
+
+#level-up.active {
+	-webkit-animation:level-up 2s; /* Safari and Chrome */
+}
+
+#level-up h2 {
+	margin: 0px;
+}
+
+@-webkit-keyframes level-up {
+	0% {opacity:0; top:100%}
+	20% {opacity:1.0; top:40%}
+	80% {opacity:1.0; top:40%}
+	100% {opacity:0; top:-20%}
+}
+
 /*****************************/
 /**** UI styles - in game ****/
 /*****************************/
@@ -504,6 +542,7 @@ and (min-device-width : 1024px) {
 		position: absolute;
 		z-index: 2;
 		pointer-events:none;
+		left:0;
 	}
 
 	.game {
@@ -549,7 +588,6 @@ and (max-width : 959px) {
 		width: 100%;
 		padding: 1em;
 		margin: 0px;
-		text-align: center
 	}
 }
 

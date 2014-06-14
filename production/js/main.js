@@ -38,8 +38,10 @@ var SpaceRocks = (function() {
 	// Constructor
 	function SpaceRocks() {
 		_this = this;
+		_this.lastTickTime = null;
 		_this.tickCount = 0;
 		_this.shouldRestart = false;
+		_this.paused = false;
 
 		// Setup physics engine
 		_this.physics = new Physics();
@@ -122,9 +124,6 @@ var SpaceRocks = (function() {
 			// Reset state
 			_this.stage.removeAllChildren();
 			_this.entities = new LinkedList();
-			_this.mouseDown = null;
-			_this.mouseUp = null;
-			_this.mouseMove = null;
 
 			// Add stars
 			_this.addStars();
@@ -165,6 +164,8 @@ var SpaceRocks = (function() {
 			_this.setupEntities(function() {
 				// Current level
 				_this.level = 1;
+				_this.lastTickTime = new Date().getTime();
+				$(".level").html(_this.level);
 				createjs.Ticker.addEventListener("tick", _this.tick);
 			});
 		},
@@ -239,7 +240,11 @@ var SpaceRocks = (function() {
 			// Prevent scrolling on page
 			document.addEventListener("touchstart", function() { return false; }, false);
 
-			 _this.canvas.addEventListener("touchstart", function(e) {
+			// In game listeners
+			_this.mouseDown = null;
+			_this.mouseUp = null;
+			_this.mouseMove = null;
+			_this.canvas.addEventListener("touchstart", function(e) {
 			 	_this.mouseDown = e;
 
 			 	// Ensure that x and y coords are mapped for render function
@@ -345,6 +350,10 @@ var SpaceRocks = (function() {
 
 			navigationLine.graphics.clear().setStrokeStyle(2 * window.devicePixelRatio).beginStroke("#15558b").dashedLineTo(this.player.x, this.player.y, this.lastTouchX, this.lastTouchY, 4);
 		},
+
+		/************************************/
+		/** ------ Public functions ------ **/
+		/************************************/
 		addEntity : function(entity, index) {
 			//if(entity.className() === "Particle") return;
 
@@ -389,10 +398,20 @@ var SpaceRocks = (function() {
 				}
 			}
 		},
+		getLastTickTime : function() {
+			return _this.lastTickTime;
+		},
 		/***************************************/
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
+			// Check for level up state
+			if(_this.paused === true) {
+				// Keep ticking so we don't get sudden entity jump after game is resumed
+				_this.lastTickTime = new Date().getTime();
+				return;
+			}
+
 			// Restart requested
 			if(_this.shouldRestart === true) {
 				_this.shouldRestart = false;
@@ -430,6 +449,9 @@ var SpaceRocks = (function() {
 			if(!_this.player.isDead()) {
 				_this.checkRemainingAsteroids();
 			}
+
+			// Update lastTickTime for entity FPS independent movement
+			_this.lastTickTime = new Date().getTime();
 
 			if(DEBUG) {_this.meter.end();}
 		},
@@ -493,7 +515,15 @@ var SpaceRocks = (function() {
 		checkRemainingAsteroids : function() {
 			// No asteroids found - level up and add back initial asteroids
 			if(!_this.asteroidPresent) {
+				_this.paused = true;
 				++_this.level;
+				$(".level").html(_this.level);
+				$("#level-up").addClass("active");
+				$("#level-up").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+					_this.paused = false;
+					$("#level-up").removeClass("active");
+				});
+
 				_this.addInitialAsteroids();
 			}
 		},

@@ -206,15 +206,14 @@ var Asteroid = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			// Max extents - update maxX and maxY each tick in case device has rotated
 			this.maxX = window.spaceRocks.getDimensions().width;
 			this.maxY = window.spaceRocks.getDimensions().height;
 
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in top left of shape)
 			this.x = (this.x - (this.radius * window.devicePixelRatio) > this.maxX)? (0 - this.radius * window.devicePixelRatio) : this.x;
@@ -223,7 +222,7 @@ var Asteroid = (function(Entity) {
 			this.y = (this.y + (this.radius * window.devicePixelRatio) < 0)? (this.maxY + this.radius * window.devicePixelRatio) : this.y;
 
 			// Rotate asteroid
-			this.rotation += (timeSinceUpdate * this.rotationSpeed);
+			this.rotation += (timeSinceLastUpdate * this.rotationSpeed);
 			if(this.rotation > 0) {
 				this.rotation = 0 + (Math.abs(this.rotation) % 360);
 			} else {
@@ -250,9 +249,6 @@ var MissileExplosion =  (function(Entity) {
 		// Explosion start time
 		this.explositionStart = new Date().getTime();
 		this.radius = 1;
-
-		// So that animation can be time related
-		this.lastUpdate = new Date().getTime();
 
 		// Setup explosion time and radius
 		this.explosionTime = 2500 * Math.random() + 0.5;
@@ -296,16 +292,15 @@ var MissileExplosion =  (function(Entity) {
 		},
 		update : function() {
 			// Expand or contract size based on time since explosion
-			this.timeSinceExplosion = new Date().getTime() - this.explositionStart;
-			this.timeSinceLastUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceExplosion = new Date().getTime() - this.explositionStart;
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			// If it's passed halfway start contracting
 			var pixelsPerMS = this.explosionRadius / this.explosionTime;
-			if(this.timeSinceExplosion > this.explosionTime / 2) {
-				this.radius -= pixelsPerMS * this.timeSinceLastUpdate;
+			if(timeSinceExplosion > this.explosionTime / 2) {
+				this.radius -= pixelsPerMS * timeSinceLastUpdate;
 			} else {
-				this.radius += pixelsPerMS * this.timeSinceLastUpdate;
+				this.radius += pixelsPerMS * timeSinceLastUpdate;
 			}
 		},
 		isDead : function() {
@@ -345,9 +340,6 @@ var Missile = (function(Entity) {
 
 		// Speed
 		this.speed = 0;
-
-		// FPS independent movement
-		this.lastUpdate = new Date().getTime();
 
 		// Whether this missile should generate others
 		this.isClusterMissile = true;
@@ -390,9 +382,7 @@ var Missile = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			if(Math.random() > 0.1) {
 				// Less particles on non native touch
@@ -413,21 +403,21 @@ var Missile = (function(Entity) {
 			// Move heading towards target
 			if(this.vx !== hvx) {
 				var direction = (this.vx > hvx)? -1 : 1;
-				this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
+				this.vx += (timeSinceLastUpdate * TURN_SPEED) * direction;
 			}
 			if(this.vy !== hvy) {
 				var direction = (this.vy > hvy)? -1 : 1;
-				this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
+				this.vy += (timeSinceLastUpdate * TURN_SPEED) * direction;
 			}
 
 			// Update speed
-			this.speed += ACCELERATION * timeSinceUpdate;
+			this.speed += ACCELERATION * timeSinceLastUpdate;
 			this.speed = (this.speed < MIN_SPEED)? MIN_SPEED : this.speed;
 			this.speed = (this.speed > MAX_SPEED)? MAX_SPEED : this.speed;
 
 			// Update location
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			// If dead add an explosion
 			if(this.isDead()) {
@@ -463,7 +453,7 @@ var Missile = (function(Entity) {
 			this.exploded = true;
 		},
 		isDead : function() {
-			return this.exploded || (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 10);
+			return this.exploded || (Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 5);
 		}
 	}
 
@@ -527,8 +517,6 @@ var Player = (function(Entity) {
 			// Speed
 			this.speed = 0;
 
-			// Last update (so updates can be FPS independent)
-			this.lastUpdate = new Date().getTime();
 			/************************/
 			/* END: movement fields */
 			/************************/
@@ -622,9 +610,7 @@ var Player = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			// Max locations for ship, reset each tick incase device has rotated
 			this.maxX =  window.spaceRocks.getDimensions().width;
@@ -654,22 +640,22 @@ var Player = (function(Entity) {
 				// Move heading towards target
 				if(this.vx !== hvx) {
 					var direction = (this.vx > hvx)? -1 : 1;
-					this.vx += (timeSinceUpdate * TURN_SPEED) * direction;
+					this.vx += (timeSinceLastUpdate * TURN_SPEED) * direction;
 				}
 				if(this.vy !== hvy) {
 					var direction = (this.vy > hvy)? -1 : 1;
-					this.vy += (timeSinceUpdate * TURN_SPEED) * direction;
+					this.vy += (timeSinceLastUpdate * TURN_SPEED) * direction;
 				}
 
 				// Set speed based on length of line (no need to be preceise with sqrt)
 				var distanceToHeading = (xDiff + yDiff) / 2;
-				this.speed += (timeSinceUpdate * ACCELERATION) * Math.abs(distanceToHeading);
+				this.speed += (timeSinceLastUpdate * ACCELERATION) * Math.abs(distanceToHeading);
 				this.speed = (this.speed > MAX_SPEED)? 0 + MAX_SPEED : this.speed;
 			}
 
 			// Update location
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in center of shape)
 			this.x = ((this.x - this.width / 2) > this.maxX)? (0 - this.width / 2) : this.x;
@@ -768,9 +754,6 @@ var Lazer = (function(Entity) {
 		// Speed
 		this.speed = SPEED;
 
-		// FPS independent movement
-		this.lastUpdate = new Date().getTime();
-
 		// State management
 		this.exploding = false;
 		this.exploded = false;
@@ -809,9 +792,7 @@ var Lazer = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
-
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			// Get vector which connects current location to target
 			var xDiff = this.xHeading - this.x;
@@ -820,8 +801,8 @@ var Lazer = (function(Entity) {
 			this.vy = (1 / (Math.abs(xDiff) + Math.abs(yDiff))) *  yDiff;
 
 			// Update location
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			// If dead add an explosion
 			if(Math.abs(this.x - this.xHeading) + Math.abs(this.y - this.yHeading) < 5) {
@@ -933,10 +914,8 @@ var Alien = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 			var timeSinceHeadingUpdate = new Date().getTime() - this.lastHeadingUpdate;
-			this.lastUpdate = new Date().getTime();
 
 			this.maxX = window.spaceRocks.getDimensions().width;
 			this.maxY = window.spaceRocks.getDimensions().height;
@@ -965,8 +944,8 @@ var Alien = (function(Entity) {
 			}
 
 			// Move alien
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			// Clamp location (origin is in top left of shape)
 			this.x = (this.x - (this.width) > this.maxX)? 0 : this.x;
@@ -1033,7 +1012,6 @@ var Particle = (function(Entity) {
 		}
 
 		// Initialise Particles
-		this.lastUpdate = new Date().getTime();
 		this.maxAge = 2000 * Math.random();
 		this.createdTime = new Date().getTime();
 		this.rotationSpeed = (Math.random() + 0.2) * 6;
@@ -1087,12 +1065,11 @@ var Particle = (function(Entity) {
 			}
 		},
 		update : function() {
-			var timeSinceUpdate = new Date().getTime() - this.lastUpdate;
-			this.lastUpdate = new Date().getTime();
+			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
 
 			// Update location
-			this.x += (timeSinceUpdate * this.speed) * this.vx;
-			this.y += (timeSinceUpdate * this.speed) * this.vy;
+			this.x += (timeSinceLastUpdate * this.speed) * this.vx;
+			this.y += (timeSinceLastUpdate * this.speed) * this.vy;
 
 			this.rotation += this.rotationSpeed;
 			this.rotation %= 360;
