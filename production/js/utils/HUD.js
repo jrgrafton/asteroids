@@ -1,6 +1,3 @@
-/**********************/
-/** ------ HUD ------ **/
-/**********************/
 var HUD = (function() {
 	function HUD() {
 		// Set player and game objects
