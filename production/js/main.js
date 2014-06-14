@@ -6,7 +6,7 @@ var SpaceRocks = (function() {
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	var INITIAL_ASTEROID_COUNT = 2;
 
-	var DEBUG = false;
+	var DEBUG = true;
 
 	function SpaceRocks() {
 		// Object variables
@@ -94,16 +94,18 @@ var SpaceRocks = (function() {
 		startGame : function() {
 			// Reset all dynamic aspects of the game
 			this.score = 0;
+			this.level = 1;
+
 			// Setup entity array
+			this.paused = true; // Ensure level up is not accidently triggered during entity setup
 			this.setupEntities(function() {
-				// Current level
-				this.level = 1;
-				
-				this.lastTickTime = new Date().getTime();
-				this.triggerLevelUp();
 				$(".level").html(this.level);
-				createjs.Ticker.removeEventListener("tick", this.tick.bind(this));
-				createjs.Ticker.addEventListener("tick", this.tick.bind(this));
+				this.triggerLevelUp();
+
+				if(this.lastTickTime === null) {
+					this.lastTickTime = new Date().getTime();
+					createjs.Ticker.addEventListener("tick", this.tick.bind(this));
+				}
 			}.bind(this));
 		},
 		setupEntities : function(callback) {
@@ -130,6 +132,7 @@ var SpaceRocks = (function() {
 				this.addEntity(this.player, 2);
 				// Create HUD
 				this.hud = new HUD(this, this.player);
+				this.hud.update();
 				// Add initial entities
 				this.addInitialAsteroids();
 				// Execute callback
@@ -252,6 +255,10 @@ var SpaceRocks = (function() {
 		/** ------ Game tick functions ------ **/
 		/***************************************/
 		tick : function() {
+			// FPS meter
+			if(DEBUG) {this.meter.begin();}
+			++this.tickCount;
+
 			// Check for level up state
 			if(this.paused === true) {
 				// Keep ticking so we don't get sudden entity jump after game is resumed
@@ -259,46 +266,39 @@ var SpaceRocks = (function() {
 				return;
 			}
 
-			// Restart requested
-			if(this.shouldRestart === true) {
-				this.shouldRestart = false;
-				createjs.Ticker.removeEventListener("tick", this.tick.bind(this));
-				this.init();
-				return;
-			}
-
-			// FPS meter
-			if(DEBUG) {this.meter.begin();}
-			++this.tickCount;
-
-			if(!this.player.isDead()) {
-				// Update and render navigation
-				this.updateNavigation();
-				this.renderNavigation();
-
-				// Update HUD 
-				this.hud.update();
-			}
-
-			// Update and render
-			this.tickEntities();
-			this.stage.update();
-
-			// Check for game over
-			this.checkGameOver();
-
-			// Possibly add alien
+			// Aliens can still be added during game over state!
 			if(this.aliensPresent < Math.floor(this.level / 2 + 1) || this.player.isDead()) {
 				this.addAlien();
 			}
 
-			// Check for end level / game conditions
+			// Restart requested
+			if(this.shouldRestart === true) {
+				this.shouldRestart = false;
+				this.init();
+				return;
+			}
+
+			// Update and render navigation
+			this.updateNavigation();
+			this.renderNavigation();
+
+			// Update HUD 
+			this.hud.update();
+
+			// Update and render entities
+			this.tickEntities();
+			this.stage.update();
+			// Update lastTickTime for entity FPS independent movement
+			this.lastTickTime = new Date().getTime();
+
+			// Check for game over
+			this.checkGameOver();
+
+			// Check for end level conditions
 			if(!this.player.isDead()) {
 				this.checkRemainingAsteroids();
 			}
 
-			// Update lastTickTime for entity FPS independent movement
-			this.lastTickTime = new Date().getTime();
 			if(DEBUG) {this.meter.end();}
 		},
 		tickEntities : function() {
@@ -336,6 +336,7 @@ var SpaceRocks = (function() {
 			}
 		},
 		triggerLevelUp : function() {
+			this.paused = true;
 			$("#level-up").addClass("active");
 			$("#level-up").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
 				this.paused = false;
@@ -345,7 +346,6 @@ var SpaceRocks = (function() {
 		checkRemainingAsteroids : function() {
 			// If no asteroids are left level up and add back asteroids
 			if(!this.asteroidPresent) {
-				this.paused = true;
 				++this.level;
 				$(".level").html(this.level);
 				this.triggerLevelUp();
@@ -459,5 +459,6 @@ var SpaceRocks = (function() {
 })();
 
 window.onload = function() {
+	FastClick.attach(document.body);
 	window.spaceRocks = new SpaceRocks(); 
 }

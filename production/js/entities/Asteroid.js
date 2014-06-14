@@ -1,7 +1,7 @@
 var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = 0.025 * window.devicePixelRatio; // Pixels per ms (asteroids have constant speed)
+	var SPEED = 0.035 * window.devicePixelRatio; // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,

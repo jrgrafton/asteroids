@@ -184,6 +184,7 @@ body.in-game #level-up {
 #level-up {
 	width: 100%;
 	height: 20%;
+	min-height: 96px;
 	border-top:5px solid #cc423b;
 	border-bottom:5px solid #cc423b;
 	background: rgba(0, 0, 0, 0.7);
@@ -204,11 +205,15 @@ body.in-game #level-up {
 	margin: 0px;
 }
 
+#level-up span {
+	font-size: 1em;
+}
+
 @-webkit-keyframes level-up {
 	0% {opacity:0; top:100%}
 	20% {opacity:1.0; top:40%}
 	80% {opacity:1.0; top:40%}
-	100% {opacity:0; top:-20%}
+	100% {opacity:1; top:40%}
 }
 
 /*****************************/
