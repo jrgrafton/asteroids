@@ -5,9 +5,9 @@ var Player = (function(Entity) {
 	var HEIGHT = 33 * window.devicePixelRatio;
 
 	// Speed fields
-	var ACCELERATION = (0.00000150 * window.devicePixelRatio); // Pixels per ms to add for each pixel distance from heading
-	var MAX_SPEED = (0.15 * window.devicePixelRatio); // Pixels per ms
-	var TURN_SPEED = 0.0003; // Speed of turn in MS. 1 = turn to face in 1ms
+	var ACCELERATION = (0.00000300); // Pixels per ms to add for each pixel distance from heading
+	var MAX_SPEED = (0.3); // Pixels per ms
+	var TURN_SPEED = 0.0005; // Speed of turn in MS. 1 = turn to face in 1ms
 
 	// Data fields
 	var MAX_MISSILES = 4;

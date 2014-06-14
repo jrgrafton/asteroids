@@ -1,5 +1,4 @@
 var SpaceRocks = (function() {
-	// Global static vars
 	var MAX_WIDTH = ($("html").hasClass("touch") && ($("html").hasClass("ios") || $("html").hasClass("android")))? 2048 : 268;
 	var MAX_HEIGHT = ($("html").hasClass("touch") && ($("html").hasClass("ios") || $("html").hasClass("android")))? 2048 : 479;
 	var TARGET_FPS = 60;
@@ -9,7 +8,6 @@ var SpaceRocks = (function() {
 
 	var DEBUG = false;
 
-	// Constructor
 	function SpaceRocks() {
 		// Object variables
 		this.lastTickTime = null;
@@ -50,7 +48,6 @@ var SpaceRocks = (function() {
 
 		// Double initial asteroid count for tablet devices
 		if((this.width / window.devicePixelRatio) * (this.height / window.devicePixelRatio) > 250000) { /* Over 500 * 500? Add more asteroids */
-			console.log("*2");
 			INITIAL_ASTEROID_COUNT *= 2;
 		}
 
@@ -64,25 +61,7 @@ var SpaceRocks = (function() {
 		createjs.Ticker.setFPS(TARGET_FPS);
 
 		// Initialise game and attach click and touch observers
-		if($("html.touch.non-native").length !== 0){
-			this.attachObservers();
-			// Prompt user to download app
-			$(".touch-splash").addClass("animated fadeIn");
-			$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
-				$(".touch-splash").addClass("fadeOut animated");
-				$(".touch-splash").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-					$(this).remove();
-				});	
-				this.init();
-			})
-		} else if($("html.unsupported-browser").length !== 0){
-			// Prompt user to download new browser
-			$(".unsupported-browser-splash").addClass("animated fadeIn");
-		} else {
-			// Start straight away
-			this.attachObservers();	
-			this.init();
-		}
+		this.observers = new Observers(this, this.canvas);
 	}
 
 	SpaceRocks.prototype = {
@@ -119,8 +98,11 @@ var SpaceRocks = (function() {
 			this.setupEntities(function() {
 				// Current level
 				this.level = 1;
+				
 				this.lastTickTime = new Date().getTime();
+				this.triggerLevelUp();
 				$(".level").html(this.level);
+				createjs.Ticker.removeEventListener("tick", this.tick.bind(this));
 				createjs.Ticker.addEventListener("tick", this.tick.bind(this));
 			}.bind(this));
 		},
@@ -157,9 +139,6 @@ var SpaceRocks = (function() {
 		/**************************************/
 		/** ------ Observer functions ------ **/
 		/**************************************/
-		attachObservers : function() {
-			this.observers = new Observers(this, this.canvas);
-		},
 		resizeToScreen : function() {
 			this.canvas = document.getElementById("game");
 			this.width = ($(window).width() <= MAX_WIDTH)? $(window).width() * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
@@ -356,17 +335,20 @@ var SpaceRocks = (function() {
 				node = node.next;
 			}
 		},
+		triggerLevelUp : function() {
+			$("#level-up").addClass("active");
+			$("#level-up").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+				this.paused = false;
+				$("#level-up").removeClass("active");
+			}.bind(this));
+		},
 		checkRemainingAsteroids : function() {
 			// If no asteroids are left level up and add back asteroids
 			if(!this.asteroidPresent) {
 				this.paused = true;
 				++this.level;
 				$(".level").html(this.level);
-				$("#level-up").addClass("active");
-				$("#level-up").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
-					this.paused = false;
-					$("#level-up").removeClass("active");
-				}.bind(this));
+				this.triggerLevelUp();
 				this.addInitialAsteroids();
 			}
 		},

@@ -3,7 +3,7 @@ var Observers = (function() {
 		this.spaceRocks = spaceRocks;
 		this.canvas = canvas;
 		this.social = new Social();
-		
+
 		this.mouseDown = null;
 		this.mouseUp = null;
 		this.mouseMove = null;
@@ -14,6 +14,43 @@ var Observers = (function() {
 	Observers.prototype = {
 		constructor : Observers,
 		init : function() {
+			this.attachToSplashScreen();
+			this.attachToButtons();
+			this.attachToCanvas();
+			this.attachToSocial();
+
+			// Prevent scrolling on page
+			document.addEventListener("touchstart", function() { return false; }, false);
+
+			// Rotation detection
+			window.addEventListener('orientationchange', function() { 
+				this.spaceRocks.resizeToScreen();
+				this.spaceRocks.addStars();
+				window.scrollTo(0, 1);
+				this.spaceRocks.stage.update();
+			}.bind(this));
+		},
+		attachToSplashScreen : function() {
+			// Splash screens
+			if($("html.touch.non-native").length !== 0){
+				// Prompt user to download app
+				$(".touch-splash").addClass("animated fadeIn");
+				$(".touch-splash .play-now")[0].addEventListener("touchend", function() {
+					$(".touch-splash").addClass("fadeOut animated");
+					$(".touch-splash").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function() {
+						$(this).remove();
+					});	
+					this.spaceRocks.init();
+				}.bind(this));
+			} else if($("html.unsupported-browser").length !== 0){
+				// Prompt user to download new browser
+				$(".unsupported-browser-splash").addClass("animated fadeIn");
+			} else {
+				// Start straight away	
+				this.spaceRocks.init();
+			}
+		},
+		attachToButtons : function() {
 			// Intro button
 			$("#intro .button").click(function() {
 				$("#intro").addClass("no-pointer-events"); // Disable touch events for intro screen
@@ -37,21 +74,8 @@ var Observers = (function() {
 				this.spaceRocks.shouldRestart = true;
 				return false;
 			}.bind(this));
-
-			// Social share buttons
-			$("#game-over .sc--facebook").click(function() {
-				this.social.postToFacebook(this.score);
-				return false;
-			}.bind(this));
-			$("#game-over .sc--twitter").click(function() {
-				this.social.postToTwitter(this.score);
-				return false;
-			}.bind(this))
-
-			// Prevent scrolling on page
-			document.addEventListener("touchstart", function() { return false; }, false);
-
-			// In game listeners
+		},
+		attachToCanvas : function() {
 			this.mouseDown = null;
 			this.mouseUp = null;
 			this.mouseMove = null;
@@ -112,14 +136,17 @@ var Observers = (function() {
 			 	this.mouseUp = overridenEvent;
 			 	this.mouseDown = null;
 			}.bind(this));
-
-			// Rotation detection
-			window.addEventListener('orientationchange', function() { 
-				this.spaceRocks.resizeToScreen();
-				this.spaceRocks.addStars();
-				window.scrollTo(0, 1);
-				this.spaceRocks.stage.update();
+		},
+		attachToSocial : function() {
+			// Social share buttons
+			$("#game-over .sc--facebook").click(function() {
+				this.social.postToFacebook(this.score);
+				return false;
 			}.bind(this));
+			$("#game-over .sc--twitter").click(function() {
+				this.social.postToTwitter(this.score);
+				return false;
+			}.bind(this))
 		}
 	}
 
