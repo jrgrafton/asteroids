@@ -6,7 +6,7 @@ var SpaceRocks = (function() {
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	var INITIAL_ASTEROID_COUNT = 2;
 
-	var DEBUG = true;
+	var DEBUG = false;
 
 	function SpaceRocks() {
 		// Object variables
