@@ -12,6 +12,7 @@ var Particle = (function(Entity) {
 		this.createdTime = new Date().getTime();
 		this.rotationSpeed = (Math.random() + 0.2) * 6;
 		this.rotation = Math.random() * 360;
+		this.lastTickTime = new Date().getTime();
 
 		// Initialise particle
 		this.init(location, color, velocityVectors, speed, size, type);
@@ -61,7 +62,7 @@ var Particle = (function(Entity) {
 			}
 		},
 		update : function() {
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
 			// Update location
 			this.x += (timeSinceLastUpdate * this.speed) * this.vx;

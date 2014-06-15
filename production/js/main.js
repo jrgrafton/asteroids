@@ -241,9 +241,6 @@ var SpaceRocks = (function() {
 				}
 			}
 		},
-		getLastTickTime : function() {
-			return this.lastTickTime;
-		},
 		addScore : function(points, x, y) {
 			if(!this.player.isDead()) {
 				points *= this.level;
@@ -261,8 +258,12 @@ var SpaceRocks = (function() {
 
 			// Check for level up state
 			if(this.paused === true) {
-				// Keep ticking so we don't get sudden entity jump after game is resumed
-				this.lastTickTime = new Date().getTime();
+				// Keep ticking entity last update time so we don't get sudden jump after game is resumed
+				var node = this.entities.getHead();
+				while (node !== null) {
+					node.data.lastTickTime = new Date().getTime();
+					node = node.next;
+				}
 				return;
 			}
 
@@ -318,6 +319,7 @@ var SpaceRocks = (function() {
 				// Update and render entity
 				e1.update();
 				e1.render();
+				e1.lastTickTime = new Date().getTime();
 
 				// Try and collide with all other entities in list
 				var nestedNode = node.next;

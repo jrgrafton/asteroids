@@ -35,6 +35,7 @@ var Missile = (function(Entity) {
 		// Cache path for animations
 		this.path = new Array();
 		this.maxPathPoints = 50;
+		this.lastTickTime = new Date().getTime();
 	}
 
 	Missile.prototype = {
@@ -69,15 +70,16 @@ var Missile = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
-			if(Math.random() > 0.1) {
-				// Less particles on non native touch
+			// Spawn particles
+			if(Math.random() > 0.05) {
 				if($('.touch.non-native').length > 0 && Math.random() < 0.5) {
-
+					// Less particles on non native touch
+				} else {
 					var particle = new Particle({x : this.x, y : this.y}, "#888", {vx : 0, vy : 0}, this.speed, 1, "square");
 					particle.maxAge = 500;
-					window.spaceRocks.addEntity(particle, 1);
+					window.spaceRocks.addEntity(particle, 2);
 				}
 			}
 

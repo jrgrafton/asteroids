@@ -40,7 +40,7 @@ var Alien = (function(Entity) {
 		this.maxY = window.spaceRocks.getDimensions().height;
 
 		// FPS independent movement
-		this.lastUpdate = new Date().getTime();
+		this.lastTickTime = new Date().getTime();
 		this.updateHeading();
 		this.lastLazer = new Date().getTime();
 		this.startTime = new Date().getTime();
@@ -91,7 +91,7 @@ var Alien = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 			var timeSinceHeadingUpdate = new Date().getTime() - this.lastHeadingUpdate;
 
 			this.maxX = window.spaceRocks.getDimensions().width;
