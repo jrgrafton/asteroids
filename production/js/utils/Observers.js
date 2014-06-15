@@ -140,11 +140,11 @@ var Observers = (function() {
 		attachToSocial : function() {
 			// Social share buttons
 			$("#game-over .sc--facebook").click(function() {
-				this.social.postToFacebook(this.score);
+				this.social.postToFacebook(this.spaceRocks.score);
 				return false;
 			}.bind(this));
 			$("#game-over .sc--twitter").click(function() {
-				this.social.postToTwitter(this.score);
+				this.social.postToTwitter(this.spaceRocks.score);
 				return false;
 			}.bind(this))
 		}
