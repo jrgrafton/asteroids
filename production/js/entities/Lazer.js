@@ -1,5 +1,5 @@
 var Lazer = (function(Entity) {
-	var SPEED = 0.30 * window.devicePixelRatio
+	var SPEED = 0.15 * window.devicePixelRatio
 
 	function Lazer() {
 		// Mixin entity base class
