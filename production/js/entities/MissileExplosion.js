@@ -13,7 +13,7 @@ var MissileExplosion =  (function(Entity) {
 
 		// Setup explosion time and radius
 		this.explosionTime = 2000 * Math.random() + 0.5;
-		this.explosionRadius = (20 *  Math.random()) + 20;
+		this.explosionRadius = (10 *  Math.random()) + 20;
 		this.lastTickTime = new Date().getTime();
 	}
 

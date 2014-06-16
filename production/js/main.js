@@ -144,6 +144,7 @@ var SpaceRocks = (function() {
 		/**************************************/
 		resizeToScreen : function() {
 			this.canvas = document.getElementById("game");
+			this.canvas.screencanvas = true;
 			this.width = ($(window).width() <= MAX_WIDTH)? $(window).width() * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
 			this.height = ($(window).height() <= MAX_HEIGHT)? $(window).height() * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
 			this.canvas.width = this.width;
