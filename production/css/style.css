@@ -73,7 +73,9 @@ a {
 .normal {
 	font-weight: 300;
 }
-
+.bold {
+	font-weight: 600;
+}
 .extra-bold {
 	font-weight: 900;
 }
