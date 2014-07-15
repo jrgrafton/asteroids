@@ -213,7 +213,7 @@ body.in-game #level-up {
 	0% {opacity:0; top:100%}
 	20% {opacity:1.0; top:40%}
 	80% {opacity:1.0; top:40%}
-	100% {opacity:1; top:40%}
+	100% {opacity:0; top:-20%}
 }
 
 /*****************************/

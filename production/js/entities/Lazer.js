@@ -1,5 +1,5 @@
 var Lazer = (function(Entity) {
-	var SPEED = 0.30 * window.devicePixelRatio
+	var SPEED = 0.10 * window.devicePixelRatio;
 
 	function Lazer() {
 		// Mixin entity base class
@@ -24,6 +24,7 @@ var Lazer = (function(Entity) {
 		this.exploding = false;
 		this.exploded = false;
 		this.startTime = new Date().getTime();
+		this.lastTickTime = new Date().getTime();
 	}
 
 	Lazer.prototype = {
@@ -58,7 +59,7 @@ var Lazer = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded || this.exploding) return;
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
 			// Get vector which connects current location to target
 			var xDiff = this.xHeading - this.x;

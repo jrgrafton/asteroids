@@ -6,7 +6,7 @@ var SpaceRocks = (function() {
 	var MOVEMENT_THRESHOLD = 5 * window.devicePixelRatio; // Number of pixels user drags before being considered a touch move
 	var INITIAL_ASTEROID_COUNT = 2;
 
-	var DEBUG = true;
+	var DEBUG = false;
 
 	function SpaceRocks() {
 		// Object variables
@@ -144,6 +144,7 @@ var SpaceRocks = (function() {
 		/**************************************/
 		resizeToScreen : function() {
 			this.canvas = document.getElementById("game");
+			this.canvas.screencanvas = true;
 			this.width = ($(window).width() <= MAX_WIDTH)? $(window).width() * window.devicePixelRatio  : MAX_WIDTH * window.devicePixelRatio;
 			this.height = ($(window).height() <= MAX_HEIGHT)? $(window).height() * window.devicePixelRatio  : MAX_HEIGHT * window.devicePixelRatio;
 			this.canvas.width = this.width;
@@ -241,9 +242,6 @@ var SpaceRocks = (function() {
 				}
 			}
 		},
-		getLastTickTime : function() {
-			return this.lastTickTime;
-		},
 		addScore : function(points, x, y) {
 			if(!this.player.isDead()) {
 				points *= this.level;
@@ -261,8 +259,12 @@ var SpaceRocks = (function() {
 
 			// Check for level up state
 			if(this.paused === true) {
-				// Keep ticking so we don't get sudden entity jump after game is resumed
-				this.lastTickTime = new Date().getTime();
+				// Keep ticking entity last update time so we don't get sudden jump after game is resumed
+				var node = this.entities.getHead();
+				while (node !== null) {
+					node.data.lastTickTime = new Date().getTime();
+					node = node.next;
+				}
 				return;
 			}
 
@@ -318,6 +320,7 @@ var SpaceRocks = (function() {
 				// Update and render entity
 				e1.update();
 				e1.render();
+				e1.lastTickTime = new Date().getTime();
 
 				// Try and collide with all other entities in list
 				var nestedNode = node.next;

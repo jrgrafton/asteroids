@@ -26,7 +26,8 @@ var Player = (function(Entity) {
 		ACCELERATION *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 		MAX_SPEED *= window.spaceRocks.getDimensions().width / (320 * window.devicePixelRatio);
 
-		this.lifeCount = 1;
+		this.lifeCount = 3;
+		this.lastTickTime = new Date().getTime();
 		this.init();
 	} 
 
@@ -151,7 +152,7 @@ var Player = (function(Entity) {
 		},
 		update : function() {
 			if(this.exploded) return;
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
 			// Max locations for ship, reset each tick incase device has rotated
 			this.maxX =  window.spaceRocks.getDimensions().width;

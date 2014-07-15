@@ -1,7 +1,7 @@
 var Asteroid = (function(Entity) {
 
 	// Static fields
-	var SPEED = 0.035 * window.devicePixelRatio; // Pixels per ms (asteroids have constant speed)
+	var SPEED = 0.025 * window.devicePixelRatio; // Pixels per ms (asteroids have constant speed)
 	var SIZES = { // Mapping of "size type" to radius of asteroids
 		0 : 10,
 		1 : 20,
@@ -24,6 +24,7 @@ var Asteroid = (function(Entity) {
 		this.sizeIndex = sizeIndex;
 
 		// Initialise Asteroid
+		this.lastTickTime = new Date().getTime();
 		this.init();
 	}
 
@@ -162,7 +163,7 @@ var Asteroid = (function(Entity) {
 			this.shape.setBounds(this.x, this.y, diameter * this.shape.scaleX, diameter * this.shape.scaleY);
 		},
 		update : function() {
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
 			// Max extents - update maxX and maxY each tick in case device has rotated
 			this.maxX = window.spaceRocks.getDimensions().width;

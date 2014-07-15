@@ -12,8 +12,9 @@ var MissileExplosion =  (function(Entity) {
 		this.radius = 1;
 
 		// Setup explosion time and radius
-		this.explosionTime = 2500 * Math.random() + 0.5;
-		this.explosionRadius = 20;
+		this.explosionTime = 2000 * Math.random() + 0.5;
+		this.explosionRadius = (10 *  Math.random()) + 20;
+		this.lastTickTime = new Date().getTime();
 	}
 
 	MissileExplosion.prototype = {
@@ -54,7 +55,7 @@ var MissileExplosion =  (function(Entity) {
 		update : function() {
 			// Expand or contract size based on time since explosion
 			var timeSinceExplosion = new Date().getTime() - this.explositionStart;
-			var timeSinceLastUpdate = new Date().getTime() - window.spaceRocks.getLastTickTime();
+			var timeSinceLastUpdate = new Date().getTime() - this.lastTickTime;
 
 			// If it's passed halfway start contracting
 			var pixelsPerMS = this.explosionRadius / this.explosionTime;
