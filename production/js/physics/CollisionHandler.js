@@ -6,86 +6,71 @@ var CollisionHandler = (function() {
 		didCollide : function(e1, e2) {
 			//console.log("[collision] " + e1.className() + " --> " + e2.className());
 
-			switch(e1.className()) {
-				case "Asteroid":
-					switch(e2.className()) {
-						case "Missile":
-							// Explode missile
-							e2.explode();
-						break;
-						case "MissileExplosion":
-							// Explode asteroid
-							if(!e1.isDead()) {
-								e1.explode();
-								window.spaceRocks.addScore(10 * (e1.sizeIndex + 1), e2.x, e2.y);
-							}
-						break;
-						case "Player":
+			var collisionMap = {
+				"Asteroid": {
+					"Missile": function (e1, e2) {
+						// Explode missile
+						e2.explode();
+					},
+					"MissileExplosion": function (e1, e2) {
+						// Explode asteroid
+						if(!e1.isDead()) {
+							e1.explode();
 							window.spaceRocks.addScore(10 * (e1.sizeIndex + 1), e2.x, e2.y);
-							e1.explode();
-							e2.explode();
-						break;
-						default:
-						break;
+						}
+					},
+					"Player": function (e1, e2) {
+						window.spaceRocks.addScore(10 * (e1.sizeIndex + 1), e2.x, e2.y);
+						e1.explode();
+						e2.explode();
 					}
-					break;
-				break;
-				case "Player":
-					switch(e2.className()) {
-						case "Alien" :
-							// Explode player
-							e1.explode();
-						break;
-						case "Lazer" :
-							// Explode player
-							e1.explode();
-							e2.explode();
-						break;
-						default:
-						break;
+				},
+				"Player": {
+					"Alien": function (e1, e2) {
+						// Explode player
+						e1.explode();
+					},
+					"Lazer": function (e1, e2) {
+						// Explode player
+						e1.explode();
+						e2.explode();
 					}
-					break;
-				default:
-				break;
-				case "Alien" : {
-					switch(e2.className()) {
-						case "Missile" :
-							// Explode missile
-							e2.explode();
-						break;
-						case "MissileExplosion" :
-							// Explode alien
-							if(!e1.isDead()) {
-								e1.explode();
-								window.spaceRocks.addScore(120, e1.x, e1.y);
-							}
-						break;
-						case "Lazer" :
-							// Explode alien and lazer
+				},
+				"Alien": {
+					"Missile": function (e1, e2) {
+						// Explode missile
+						e2.explode();
+					},
+					"MissileExplosion": function (e1, e2) {
+						// Explode alien
+						if(!e1.isDead()) {
 							e1.explode();
-							e2.explode();
-						break
-						default:
-						break;
+							window.spaceRocks.addScore(120, e1.x, e1.y);
+						}
+					},
+					"Lazer": function (e1, e2) {
+						// Explode alien and lazer
+						e1.explode();
+						e2.explode();
 					}
-					break;
+				},
+				"Lazer": {
+					"Missile": function (e1, e2) {
+						// Explode lazer and missile
+						e1.explode();
+						e2.explode();
+					},
+					"MissileExplosion": function (e1, e2) {
+						// Explode alien
+						e1.explode();
+						e2.explode();
+					}
 				}
-				case "Lazer" : {
-					switch(e2.className()) {
-						case "Missile" :
-							// Explode lazer and missile
-							e1.explode();
-							e2.explode();
-						break;
-						case "MissileExplosion" :
-							// Explode alien
-							e1.explode();
-							e2.explode();
-						break;
-						default:
-						break;
-					}
-					break;
+			};
+
+			if (e1.className() in collisionMap) {
+				if (e2.className() in collisionMap[e1.className()]) {
+					collisionMap[e1.className()][e1.className()](e1, e2);
 				}
 			}
 		}

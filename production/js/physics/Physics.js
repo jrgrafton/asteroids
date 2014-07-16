@@ -60,92 +60,64 @@ var Physics = (function() {
 			e1d.rotation = this.rotationToRadians(e1d.rotation);
 			e2d.rotation = this.rotationToRadians(e2d.rotation);
 
-			switch(entities[0].getHitBoxType()) {
-				case 0:
-					var sat1 = new SAT.Vector(e1d.x, e1d.y);
-					switch(entities[1].getHitBoxType()) {
-						case 1:
-							// Point in circle
-							var sat2 = new SAT.Circle(new SAT.Vector(e2d.x, e2d.y), e2d.width / 2);
-							return SAT.pointInCircle(sat1, sat2);
-						break;
-						case 2:
-							// Point in rectangle
-							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
-							//sat2.angle = e2d.rotation;
-							sat2.recalc();
-							return SAT.pointInPolygon(sat1, sat2);
-						break;
-						case 3:
-							// Point in poly
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
-							return SAT.pointInPolygon(sat1, sat2);
-						break;
-						default:
-							return false;
-						break;
+			var geoTypeMap = {
+				POINT: function(ed) {
+					return new SAT.Vector(ed.x, ed.y);
+				},
+				CIRCLE: function(ed) {
+					return new SAT.Circle(new SAT.Vector(ed.x, ed.y), ed.width / 2);
+				},
+				RECTANGLE: function(ed) {
+					return new SAT.Box(new SAT.Vector(ed.x, ed.y), ed.width, ed.height).toPolygon();
+				},
+				POLYGON: function(ed) {
+					return new this.getPolygonFromPoints(ed.points, ed.rotation);
+				}
+			};
+
+			var collisionDetectors = {
+				POINT: {
+					CIRCLE: SAT.pointInCircle,
+					RECTANGLE: SAT.pointInPolygon,
+					POLYGON: SAT.pointInPolygon
+				},
+				CIRCLE: {
+					CIRCLE: function(sat1, sat2) {
+						return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
+					},
+					RECTANGLE: function(sat1, sat2) {
+						return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+					},
+					POLYGON: function(sat1, sat2) {
+						return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
 					}
-				break;
-				case 1:
-					var sat1 = new SAT.Circle(new SAT.Vector(e1d.x, e1d.y), e1d.width / 2);
-					switch(entities[1].getHitBoxType()) {
-						case 1:
-							// Circle in circle
-							var sat2 = new SAT.Circle(new SAT.Vector(e2d.x, e2d.y), e2d.width / 2);
-							return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
-						break;
-						case 2:
-							// Circle in rectangle
-							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
-							//sat2.angle = e2d.rotation;
-							//sat2.recalc();
-							var result = SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
-							return result;
-						break;
-						case 3:
-							// Circle in polygon
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
-							return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
-						break;
-						default:
-							return false;
-						break;
+				},
+				RECTANGLE: {
+					RECTANGLE: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+					},
+					POLYGON: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
 					}
-				break;
-				case 2:
-					var sat1 = new SAT.Box(new SAT.Vector(e1d.x, e1d.y), e1d.width, e1d.height).toPolygon();
-					switch(entities[1].getHitBoxType()) {
-						case 2:
-							// Rectangle in rectangle
-							var sat2 = new SAT.Box(new SAT.Vector(e2d.x, e2d.y), e2d.width, e2d.height).toPolygon();
-							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-						break;
-						case 3:
-							// Rectangle in polygon
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
-							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-						break;
-						default:
-							return false;
-						break;
+				},
+				POLYGON: {
+					POLYGON: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
 					}
-				break;
-				case 3:
-					var sat1 = this.getPolygonFromPoints(e2d.points, e2d.rotation);
-					switch(entities[1].getHitBoxType()) {
-						case 3:
-							// Polygon in polygon
-							var sat2 = this.getPolygonFromPoints(e2d.points, e2d.rotation, e2d.x, e2d.y);
-							return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-						break;
-						default:
-							return false;
-						break;
-					}
-				break;
-				default:
-				return false;
+				}
+			};
+
+			var hbt1 = entities[0].getHitBoxType();
+			var hbt2 = entities[1].getHitBoxType();
+			var sat1 = geoTypeMap[hbt1];
+			var sat2 = geoTypeMap[hbt2];
+
+			if (hbt1 in collisionDetectors) {
+				if (hbt2 in collisionDetectors[hbt1]) {
+					return collisionDetectors[hbt1][hbt2](sat1, sat2);
+				}
 			}
+
 			return false;
 		}
 	}
