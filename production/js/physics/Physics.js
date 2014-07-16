@@ -60,63 +60,63 @@ var Physics = (function() {
 			e1d.rotation = this.rotationToRadians(e1d.rotation);
 			e2d.rotation = this.rotationToRadians(e2d.rotation);
 
-            var geoTypeMap = {
-                POINT: function(ed) {
-                    return new SAT.Vector(ed.x, ed.y);
-                },
-                CIRCLE: function(ed) {
-                    return new SAT.Circle(new SAT.Vector(ed.x, ed.y), ed.width / 2);
-                },
-                RECTANGLE: function(ed) {
-                    return new SAT.Box(new SAT.Vector(ed.x, ed.y), ed.width, ed.height).toPolygon();
-                },
-                POLYGON: function(ed) {
-                    return new this.getPolygonFromPoints(ed.points, ed.rotation);
-                }
-            };
+			var geoTypeMap = {
+				POINT: function(ed) {
+					return new SAT.Vector(ed.x, ed.y);
+				},
+				CIRCLE: function(ed) {
+					return new SAT.Circle(new SAT.Vector(ed.x, ed.y), ed.width / 2);
+				},
+				RECTANGLE: function(ed) {
+					return new SAT.Box(new SAT.Vector(ed.x, ed.y), ed.width, ed.height).toPolygon();
+				},
+				POLYGON: function(ed) {
+					return new this.getPolygonFromPoints(ed.points, ed.rotation);
+				}
+			};
 
-            var collisionDetectors = {
-                POINT: {
-                    CIRCLE: SAT.pointInCircle,
-                    RECTANGLE: SAT.pointInPolygon,
-                    POLYGON: SAT.pointInPolygon
-                },
-                CIRCLE: {
-                    CIRCLE: function(sat1, sat2) {
-                        return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
-                    },
-                    RECTANGLE: function(sat1, sat2) {
-                        return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
-                    },
-                    POLYGON: function(sat1, sat2) {
-                        return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
-                    }
-                },
-                RECTANGLE: {
-                    RECTANGLE: function(sat1, sat2) {
-                        return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-                    },
-                    POLYGON: function(sat1, sat2) {
-                        return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-                    }
-                },
-                POLYGON: {
-                    POLYGON: function(sat1, sat2) {
-                        return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
-                    }
-                }
-            };
+			var collisionDetectors = {
+				POINT: {
+					CIRCLE: SAT.pointInCircle,
+					RECTANGLE: SAT.pointInPolygon,
+					POLYGON: SAT.pointInPolygon
+				},
+				CIRCLE: {
+					CIRCLE: function(sat1, sat2) {
+						return SAT.testCircleCircle(sat1, sat2, new SAT.Response());
+					},
+					RECTANGLE: function(sat1, sat2) {
+						return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+					},
+					POLYGON: function(sat1, sat2) {
+						return SAT.testCirclePolygon(sat1, sat2, new SAT.Response());
+					}
+				},
+				RECTANGLE: {
+					RECTANGLE: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+					},
+					POLYGON: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+					}
+				},
+				POLYGON: {
+					POLYGON: function(sat1, sat2) {
+						return SAT.testPolygonPolygon(sat1, sat2, new SAT.Response());
+					}
+				}
+			};
 
-            var hbt1 = entities[0].getHitBoxType();
-            var hbt2 = entities[1].getHitBoxType();
-            var sat1 = geoTypeMap[hbt1];
-            var sat2 = geoTypeMap[hbt2];
+			var hbt1 = entities[0].getHitBoxType();
+			var hbt2 = entities[1].getHitBoxType();
+			var sat1 = geoTypeMap[hbt1];
+			var sat2 = geoTypeMap[hbt2];
 
-            if (hbt1 in collisionDetectors) {
-                if (hbt2 in collisionDetectors[hbt1]) {
-                    return collisionDetectors[hbt1][hbt2](sat1, sat2);
-                }
-            }
+			if (hbt1 in collisionDetectors) {
+				if (hbt2 in collisionDetectors[hbt1]) {
+					return collisionDetectors[hbt1][hbt2](sat1, sat2);
+				}
+			}
 
 			return false;
 		}
